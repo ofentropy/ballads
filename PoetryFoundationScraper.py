@@ -4,7 +4,7 @@ import html
 import re
 
 
-file = open("/Users/zuyizhao/Documents/GitHub/ballads/UrlsToPoetryFoundationBallads")
+file = open("UrlsToPoetryFoundationBallads")
 urls = file.readlines()
 
 folder = "BalladsPoetryFoundation/"
