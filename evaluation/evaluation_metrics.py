@@ -225,13 +225,18 @@ def get_relatedness_score(path1, path2):
     response = json.loads(response_raw.text)
     score = response.get("value")
     return score
-  else: return None 
-  
+  else: return None #maybe not include in the count if none
+  # else: return 0
+
+
 def get_ballad_relatedness_score(ballad, keywords):
   num_words = 0
   ballad_score = 0
+  print(len(ballad))
   for line in ballad:
+    # print(line)
     words =  re.findall(r'[\w]+', line)
+    # num_words += len(words)
     for word in words:
        #get scores for word and average
       word_score = 0
@@ -239,9 +244,11 @@ def get_ballad_relatedness_score(ballad, keywords):
       keyword_num = 0
       for keyword in keywords:
         keyword_path = get_conceptnet_path_from_word(keyword, verify=False)
-        if (get_relatedness_score(word_path, keyword_path) != None):
-          word_score += get_relatedness_score(word_path, keyword_path)
+        score = get_relatedness_score(word_path, keyword_path)
+        if (score != None):
+          word_score += score
           keyword_num += 1
+          # num_words += 1
       if (keyword_num != 0):
         word_score /= keyword_num
       else:
@@ -265,10 +272,12 @@ def get_average_ballad_relatedness_score(ballads, ballads_keywords):
   # n = len(ballads.keys())
   n = 0
   for id in ballads.keys():
+    # print(id)
     ballad = ballads[id]
     keywords = ballads_keywords[id]
-    if (get_ballad_relatedness_score(ballad, keywords) != None):
-      average_score += get_ballad_relatedness_score(ballad, keywords)
+    score = get_ballad_relatedness_score(ballad, keywords)
+    if (score != None):
+      average_score += score
       n += 1
   average_score /= n
   return average_score
