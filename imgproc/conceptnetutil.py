@@ -121,12 +121,15 @@ def get_n_related_terms_raw_from_word(word, n, min_weight):
 def convert_related_raw_to_words(related_raw):
   """
   Strips ConceptNet prefix from each related term in the given array
-
+  
   @param related_raw - list
   @return list
   """
   c = Counter(related_raw)
   array = []
   for term, _ in c.most_common():
-    array.append(get_word_from_conceptnet_path(term))
+    word = get_word_from_conceptnet_path(term)
+    if '_' in word:
+      word = " ".join(word.split("_"))
+    array.append(word)
   return array
