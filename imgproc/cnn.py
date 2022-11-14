@@ -36,6 +36,7 @@ def get_keywords_for_images(images, n=1):
       img_keyword_dict[img_id] = keywords
       img_to_urls[img_id] = img_url
   return img_keyword_dict, img_to_urls
+  
 def get_keywords_from_img_url(img_url, img_id, model, n=1):
   """
   Gets the top n keywords of the given image
