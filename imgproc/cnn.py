@@ -25,6 +25,7 @@ def get_keywords_for_images(images, n=1):
   @return dict {int:array}
   """
   img_keyword_dict = {}
+  img_to_urls = {}
   for img in images:
     img_url, img_id = get_img_info(img) # get url and id of sampled img
     keywords = get_keywords_from_img_url(img_url, img_id, base_model, n) # get top n keyword(s) from img using inceptionV3
@@ -32,9 +33,9 @@ def get_keywords_for_images(images, n=1):
       print(f"Image at {img_url} is invalid.")
     else:
       print(f"Classified image at {img_url} as {keywords}.")
-    img_keyword_dict[img_id] = keywords
-  return img_keyword_dict
-
+      img_keyword_dict[img_id] = keywords
+      img_to_urls[img_id] = img_url
+  return img_keyword_dict, img_to_urls
 def get_keywords_from_img_url(img_url, img_id, model, n=1):
   """
   Gets the top n keywords of the given image
