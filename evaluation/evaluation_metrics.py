@@ -51,7 +51,7 @@ def get_syllable_count(word):
      return max([len([y for y in x if y[-1].isdigit()]) for x in d[lowercase]])
 
 
-def eval_syllables(ballad):
+def eval_syllables(ballad, exact=True):
   last_words = []
   n_lines = len(ballad)
   syllable_success = 0
@@ -61,17 +61,21 @@ def eval_syllables(ballad):
     for word in words:
       if get_syllable_count(word) >= 0:
         line_syllable_count += get_syllable_count(word)
-    if line_syllable_count ==14: #check if line has 14 syllables
-      syllable_success += 1
+    if exact:
+      if line_syllable_count == 14: #check if line has 14 syllables
+        syllable_success += 1
+    else:
+      if line_syllable_count >= 10 and line_syllable_count <= 14: #check if line has 14 syllables
+        syllable_success += 1
   return syllable_success/n_lines
 
-def eval_syllables_across_ballads(ballads):
+def eval_syllables_across_ballads(ballads, exact=True):
   n = len(ballads.keys())
   print(n)
   average_syllable_score = 0
   for id in ballads.keys():
     ballad = ballads[id]
-    average_syllable_score += eval_syllables(ballad)
+    average_syllable_score += eval_syllables(ballad, exact)
   average_syllable_score /= n
   return average_syllable_score
 
@@ -81,6 +85,9 @@ def eval_syllables_across_ballads(ballads):
 def rhymes(word):
   """
   Taken from pronouncing module and modified
+  Original: https://pypi.org/project/pronouncing/
+  Github: https://github.com/aparrish/pronouncingpy
+  Modified to include our get_syllabes()
   Get words rhyming with a given word.
   This function may return an empty list if no rhyming words are found in
   the dictionary, or if the word you pass to the function is itself not
@@ -295,7 +302,7 @@ print("Syllables evaluation average: ", syl_rate)
 print("Syllables evaluation average (aws): ", syl_rate_aws)
 print("Syllables evaluation average (colab): ", syl_rate_colab)
 
-ateABAB, rateABCB, overall_rhyme = eval_follows_rhyme_scheme(ballads)
+rateABAB, rateABCB, overall_rhyme = eval_follows_rhyme_scheme(ballads)
 rateABAB_aws, rateABCB_aws, overall_rhyme_aws = eval_follows_rhyme_scheme(ballads_aws)
 rateABAB_colab, rateABCB_colab, overall_rhyme_colab = eval_follows_rhyme_scheme(ballads_colab)
 
