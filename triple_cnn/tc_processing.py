@@ -3,6 +3,7 @@ from urllib.request import urlopen
 from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
+import json
 
 img_h, img_w = (299, 299)
 
@@ -14,8 +15,22 @@ def view_image(dataset, idx):
     plt.imshow(data, interpolation='nearest')
     plt.show()
 
+
+def create_id_url_lookup(dictionary):
+    id_to_url = {}
+    for elem in dictionary:
+        id = elem['id']
+        url = elem['image_url']
+        id_to_url[id] = url
+    return id_to_url
+
+
 def crop_and_save_images(urls, folder="images/"):
+    url_file_lookup = {}
+    i = 0
     for url in tqdm(urls):
+        url_file_lookup[url] = f"{i}"
+        i += 1
         # reference: https://stackoverflow.com/a/60431763
         with urlopen(url) as request:
             img_array = np.asarray(bytearray(request.read()), dtype=np.uint8)
@@ -41,17 +56,22 @@ def crop_and_save_images(urls, folder="images/"):
         crop = resized[int(y):int(y+img_h), int(x):int(x+img_w)]
         
         crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
-        filename = f"{folder}{url}.jpg"
-        cv2.imwrite(filename, crop)
+        filename = f"{folder}{url_file_lookup[url]}.jpg"
+        assert cv2.imwrite(filename, crop) == True
+    
+    with open("/home/ubuntu/ballads/triple_cnn/url_file_lookup.json", 'w') as f:
+        print(json.dumps(url_file_lookup, sort_keys=True, indent=4), file=f)
 
-def load_images_and_get_ground_truths(dataset, lookup, class_num):
+
+def load_images_and_get_ground_truths(dataset, lookup, url_file_lookup, class_num):
     #Load images from given URLs + resize & crop
     #Returns normalized images and the associated url order
     
     images = []
     ground_truths = []
     for url, labels in tqdm(dataset.items()):
-        img_path = "images/" + url + ".jpg"
+        file_name = url_file_lookup[url]
+        img_path = "images/" + file_name + ".jpg"
         crop = cv2.imread(img_path)
         images.append(crop)
         

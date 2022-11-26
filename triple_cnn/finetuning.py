@@ -29,6 +29,9 @@ class MultiLabelCNN():
         return model
 
 
+with open("/home/ubuntu/ballads/triple_cnn/url_file_lookup.json", 'w') as f:
+    url_file_lookup = json.loads(f.read())
+
 common_object_labels = get_labels_from_text("data/common_object_labels.txt")
 common_sentiment_labels = get_labels_from_text("data/common_sentiment_labels.txt")
 common_scene_labels = get_labels_from_text("data/common_scene_labels.txt")
@@ -41,9 +44,9 @@ common_url_to_objects = get_img_labels_from_csv("data/common_url_to_objects.csv"
 common_url_to_sentiments = get_img_labels_from_csv("data/common_url_to_sentiments.csv", "sentiments")
 common_url_to_scenes = get_img_labels_from_csv("data/common_url_to_scenes.csv", "scenes")
 
-#X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, objects_lookup, len(common_object_labels))
-#X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, len(common_sentiment_labels))
-#X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, common_url_to_scenes, len(common_scene_labels))
+#X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, objects_lookup, url_file_lookup, len(common_object_labels))
+#X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, url_file_lookup, len(common_sentiment_labels))
+#X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, common_url_to_scenes, url_file_lookup, len(common_scene_labels))
 
 #X_objects_train, X_objects_test, Y_objects_train, Y_objects_test = train_test_split(X_objects, Y_objects)
 #X_sentiments_train, X_sentiments_test, Y_sentiments_train, Y_sentiments_test = train_test_split(X_sentiments, Y_sentiments)
