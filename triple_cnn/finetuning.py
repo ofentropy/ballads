@@ -44,9 +44,9 @@ common_url_to_objects = get_img_labels_from_csv("data/common_url_to_objects.csv"
 common_url_to_sentiments = get_img_labels_from_csv("data/common_url_to_sentiments.csv", "sentiments")
 common_url_to_scenes = get_img_labels_from_csv("data/common_url_to_scenes.csv", "scenes")
 
-X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, objects_lookup, url_file_lookup, len(common_object_labels))
-X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, url_file_lookup, len(common_sentiment_labels))
-X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, scenes_lookup, url_file_lookup, len(common_scene_labels))
+#X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, objects_lookup, url_file_lookup, len(common_object_labels))
+#X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, url_file_lookup, len(common_sentiment_labels))
+#X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, scenes_lookup, url_file_lookup, len(common_scene_labels))
 
 #X_objects_train, X_objects_test, Y_objects_train, Y_objects_test = train_test_split(X_objects, Y_objects)
 #X_sentiments_train, X_sentiments_test, Y_sentiments_train, Y_sentiments_test = train_test_split(X_sentiments, Y_sentiments)
@@ -55,7 +55,8 @@ X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, sce
 BATCH_SIZE = 1
 EPOCHS = 8
 
-def finetune(num_labels, X, Y):
+def finetune(url_to_labels, labels_lookup, url_file_lookup, num_labels):
+    X, Y = load_images_and_get_ground_truths(url_to_labels, labels_lookup, url_file_lookup, num_labels)
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y)
     model = MultiLabelCNN(num_labels)
     model_checkpoint = ModelCheckpoint('inceptionv3.h5', monitor="accuracy",verbose=1, save_best_only=True)
