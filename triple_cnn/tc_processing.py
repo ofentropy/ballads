@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
 import json
+from collections import Counter
 
 img_h, img_w = (299, 299)
 
@@ -100,10 +101,14 @@ def create_ground_truth_vector(labels, lookup, class_num):
     return ground_truth
 
 
-def labels_from_one_hot(vec, reverse_lookup):
+def decode_predictions(predictions, reverse_lookup, k=10):
+    _, dim = predictions.shape
+    temp = {}
+    for i in range(dim):
+        temp[i] = predictions[i]
+    
+    top_k = Counter(temp).most_common(k)
     labels = []
-    n = vec.shape[0]
-    for i in range(n):
-        if vec[i] == 1:
-            labels.append(reverse_lookup[i])
+    for idx,_ in top_k:
+        labels.append(reverse_lookup[idx])
     return labels
