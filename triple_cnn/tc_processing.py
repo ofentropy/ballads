@@ -105,7 +105,7 @@ def decode_predictions(predictions, reverse_lookup, k=10):
     _, dim = predictions.shape
     temp = {}
     for i in range(dim):
-        temp[i] = predictions[i]
+        temp[i] = predictions[0,i]
     
     top_k = Counter(temp).most_common(k)
     labels = []
