@@ -58,13 +58,9 @@ BATCH_SIZE = 1
 EPOCHS = 8
 
 object_model = MultiLabelCNN(len(common_object_labels))
-object_model.fit(X_objects_train, Y_objects_train, batch_size=BATCH_SIZE, epochs=EPOCHS, 
-    validation_data=(X_objects_test, Y_objects_test), callbacks=[model_checkpoint])
-
 sentiment_model = MultiLabelCNN(len(common_sentiment_labels))
-sentiment_model.fit(X_sentiments_train, Y_sentiments_train, batch_size=BATCH_SIZE, epochs=EPOCHS, 
-    validation_data=(X_sentiments_test, Y_sentiments_test), callbacks=[model_checkpoint])
-
 scene_model = MultiLabelCNN(len(common_scene_labels))
-scene_model.fit(X_scenes_train, Y_scenes_train, batch_size=BATCH_SIZE, epochs=EPOCHS, 
-    validation_data=(X_scenes_test, Y_scenes_test), callbacks=[model_checkpoint])
+
+def finetune_model(model, X_train, Y_train, X_test, Y_test, callbacks):
+    model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
+        validation_data=(X_test,Y_test), callbacks=callbacks)
