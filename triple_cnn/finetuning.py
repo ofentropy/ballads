@@ -48,14 +48,15 @@ X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, 
 X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, url_file_lookup, len(common_sentiment_labels))
 X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, scenes_lookup, url_file_lookup, len(common_scene_labels))
 
-X_objects_train, X_objects_test, Y_objects_train, Y_objects_test = train_test_split(X_objects, Y_objects)
-X_sentiments_train, X_sentiments_test, Y_sentiments_train, Y_sentiments_test = train_test_split(X_sentiments, Y_sentiments)
-X_scenes_train, X_scenes_test, Y_scenes_train, Y_scenes_test = train_test_split(X_scenes, Y_scenes)
+#X_objects_train, X_objects_test, Y_objects_train, Y_objects_test = train_test_split(X_objects, Y_objects)
+#X_sentiments_train, X_sentiments_test, Y_sentiments_train, Y_sentiments_test = train_test_split(X_sentiments, Y_sentiments)
+#X_scenes_train, X_scenes_test, Y_scenes_train, Y_scenes_test = train_test_split(X_scenes, Y_scenes)
 
 BATCH_SIZE = 1
 EPOCHS = 8
 
-def finetune(num_labels, X_train, Y_train, X_test, Y_test):
+def finetune(num_labels, X, Y):
+    X_train, X_test, Y_train, Y_test = train_test_split(X,Y)
     model = MultiLabelCNN(num_labels)
     model_checkpoint = ModelCheckpoint('inceptionv3.h5', monitor="accuracy",verbose=1, save_best_only=True)
     model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
