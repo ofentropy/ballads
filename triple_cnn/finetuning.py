@@ -11,25 +11,24 @@ from tc_processing import *
 from sklearn.model_selection import train_test_split
 
 
-class MultiLabelCNN():
-    def __init__(self, num_labels):
-        base_model = InceptionV3(weights='imagenet', include_top='false', input_shape=(299,299,3))
-        x = base_model.output
-        x = GlobalAveragePooling2D()(x)
-        x = Dense(2048, activation='relu')(x)
-        x = Dropout(0.1)(x)
-        outputs = Dense(num_labels, activation='sigmoid')(x)
-        model = Model(inputs=base_model.input, outputs=outputs)
-        
-        for layer in base_model.layers:
-            layer.trainable = False
-        
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+def MultiLabelCNN():
+    base_model = InceptionV3(weights='imagenet', include_top='false', input_shape=(299,299,3))
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(2048, activation='relu')(x)
+    x = Dropout(0.1)(x)
+    outputs = Dense(num_labels, activation='sigmoid')(x)
+    model = Model(inputs=base_model.input, outputs=outputs)
+    
+    for layer in base_model.layers:
+        layer.trainable = False
+    
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        return model
+    return model
 
 
-with open("/home/ubuntu/ballads/triple_cnn/url_file_lookup.json", 'w') as f:
+with open("/home/ubuntu/ballads/triple_cnn/url_file_lookup.json", 'r') as f:
     url_file_lookup = json.loads(f.read())
 
 common_object_labels = get_labels_from_text("data/common_object_labels.txt")
