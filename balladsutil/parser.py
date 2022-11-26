@@ -19,6 +19,11 @@ ABS_KEY = "abstraction.n.06"
 
 # GRANULAR 
 def get_adjs_and_nouns(poem, tagset="universal"):
+    """
+    Given a strin with new line characters (poem),
+    return list of adjectives and list of nouns
+    that are found in the poem
+    """
     adjs = []
     nouns = []
 
@@ -43,6 +48,8 @@ def get_adjs_and_nouns(poem, tagset="universal"):
 
 def split_object_scene(nouns):
     """
+    Given a list of nouns, splits them into
+    two lists, one physical (objects) and one abstract (scenes)
     """
     object_nouns = []
     scene_nouns = []
