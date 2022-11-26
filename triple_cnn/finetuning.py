@@ -53,7 +53,7 @@ common_url_to_scenes = get_img_labels_from_csv("data/common_url_to_scenes.csv", 
 #X_scenes_train, X_scenes_test, Y_scenes_train, Y_scenes_test = train_test_split(X_scenes, Y_scenes)
 
 BATCH_SIZE = 1
-EPOCHS = 8
+EPOCHS = 5
 
 def finetune(url_to_labels, labels_lookup, url_file_lookup, num_labels):
     X, Y = load_images_and_get_ground_truths(url_to_labels, labels_lookup, url_file_lookup, num_labels)
@@ -62,3 +62,4 @@ def finetune(url_to_labels, labels_lookup, url_file_lookup, num_labels):
     model_checkpoint = ModelCheckpoint('inceptionv3.h5', monitor="accuracy",verbose=1, save_best_only=True)
     model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
         validation_data=(X_test,Y_test), callbacks=[model_checkpoint])
+    return model
