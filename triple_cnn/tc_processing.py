@@ -1,10 +1,12 @@
 import cv2
+import tensorflow as tf
 from urllib.request import urlopen
 from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
 import json
 from collections import Counter
+import random
 
 img_h, img_w = (299, 299)
 
@@ -112,3 +114,21 @@ def decode_predictions(predictions, reverse_lookup, k=10):
     for idx,_ in top_k:
         labels.append(reverse_lookup[idx])
     return labels
+
+
+def test_model(n, model, reverse_lookup, k=10, images_dir="images/"):
+    total_num = 7703 
+    chosen = [random.randint(0,total_num) for i in range(n)]
+
+    outputs = {}
+    for id in chosen:
+        test_img = cv2.imread(f"{images_dir}{id}.jpg")
+        x = tf.keras.preprocessing.image.img_to_array(test_img)
+        x = np.expand_dims(x, axis=0)
+        x = tf.keras.applications.inception_v3.preprocess_input(x)
+        preds = model.predict(x)
+        decoding = decode_predictions(preds, reverse_lookup, k)
+        print(f"Labeled {id}.jpg as: {decoding}")
+        outputs[id] = decoding
+    
+    return outputs
