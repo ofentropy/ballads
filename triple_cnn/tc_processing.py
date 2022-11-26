@@ -14,15 +14,8 @@ def view_image(dataset, idx):
     plt.imshow(data, interpolation='nearest')
     plt.show()
 
-
-def load_images_and_get_ground_truths(dataset, lookup, class_num):
-    """
-    Load images from given URLs + resize & crop
-    Returns normalized images and the associated url order
-    """
-    images = []
-    ground_truths = []
-    for url, labels in tqdm(dataset.items()):
+def crop_and_save_images(urls, folder="images/"):
+    for url in tqdm(urls):
         # reference: https://stackoverflow.com/a/60431763
         with urlopen(url) as request:
             img_array = np.asarray(bytearray(request.read()), dtype=np.uint8)
@@ -48,6 +41,18 @@ def load_images_and_get_ground_truths(dataset, lookup, class_num):
         crop = resized[int(y):int(y+img_h), int(x):int(x+img_w)]
         
         crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+        filename = f"{folder}{url}.jpg"
+        cv2.imwrite(filename, crop)
+
+def load_images_and_get_ground_truths(dataset, lookup, class_num):
+    #Load images from given URLs + resize & crop
+    #Returns normalized images and the associated url order
+    
+    images = []
+    ground_truths = []
+    for url, labels in tqdm(dataset.items()):
+        img_path = "images/" + url + ".jpg"
+        crop = cv2.imread(img_path)
         images.append(crop)
         
         ground_truth = create_ground_truth_vector(labels, lookup, class_num)
