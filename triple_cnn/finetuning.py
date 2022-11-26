@@ -11,10 +11,9 @@ from tc_processing import *
 from sklearn.model_selection import train_test_split
 
 
-class MultiLabelCNN(InceptionV3):
+class MultiLabelCNN():
     def __init__(self, num_labels):
-        base_model = super(MultiLabelCNN, self).__init__(
-            weights='imagenet', include_top='false', input_shape=(299,299,3))
+        base_model = InceptionV3(weights='imagenet', include_top='false', input_shape=(299,299,3))
         x = base_model.output
         x = GlobalAveragePooling2D()(x)
         x = Dense(2048, activation='relu')(x)
@@ -42,10 +41,10 @@ common_url_to_objects = get_img_labels_from_csv("data/common_url_to_objects.csv"
 common_url_to_sentiments = get_img_labels_from_csv("data/common_url_to_sentiments.csv", "sentiments")
 common_url_to_scenes = get_img_labels_from_csv("data/common_url_to_scenes.csv", "scenes")
 
-X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, objects_lookup, len(common_object_labels))
-X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, len(common_sentiment_labels))
-X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, common_url_to_scenes, len(common_scene_labels))
+#X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, objects_lookup, len(common_object_labels))
+#X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, len(common_sentiment_labels))
+#X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, common_url_to_scenes, len(common_scene_labels))
 
-X_objects_train, X_objects_test, Y_objects_train, Y_objects_test = train_test_split(X_objects, Y_objects)
-X_sentiments_train, X_sentiments_test, Y_sentiments_train, Y_sentiments_test = train_test_split(X_sentiments, Y_sentiments)
-X_scenes_train, X_scenes_test, Y_scenes_train, Y_scenes_test = train_test_split(X_scenes, Y_scenes)
+#X_objects_train, X_objects_test, Y_objects_train, Y_objects_test = train_test_split(X_objects, Y_objects)
+#X_sentiments_train, X_sentiments_test, Y_sentiments_train, Y_sentiments_test = train_test_split(X_sentiments, Y_sentiments)
+#X_scenes_train, X_scenes_test, Y_scenes_train, Y_scenes_test = train_test_split(X_scenes, Y_scenes)

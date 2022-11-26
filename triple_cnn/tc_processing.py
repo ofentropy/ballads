@@ -2,6 +2,7 @@ import cv2
 from urllib.request import urlopen
 from matplotlib import pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
 img_h, img_w = (299, 299)
 
@@ -21,7 +22,7 @@ def load_images_and_get_ground_truths(dataset, lookup, class_num):
     """
     images = []
     ground_truths = []
-    for url, labels in dataset.items():
+    for url, labels in tqdm(dataset.items()):
         # reference: https://stackoverflow.com/a/60431763
         with urlopen(url) as request:
             img_array = np.asarray(bytearray(request.read()), dtype=np.uint8)
