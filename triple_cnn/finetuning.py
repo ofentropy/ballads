@@ -46,7 +46,7 @@ common_url_to_scenes = get_img_labels_from_csv("data/common_url_to_scenes.csv", 
 
 X_objects, Y_objects = load_images_and_get_ground_truths(common_url_to_objects, objects_lookup, url_file_lookup, len(common_object_labels))
 X_sentiments, Y_sentiments = load_images_and_get_ground_truths(common_url_to_sentiments, sentiments_lookup, url_file_lookup, len(common_sentiment_labels))
-X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, common_url_to_scenes, scenes_lookup, url_file_lookup, len(common_scene_labels))
+X_scenes, Y_scenes = load_images_and_get_ground_truths(common_url_to_scenes, scenes_lookup, url_file_lookup, len(common_scene_labels))
 
 X_objects_train, X_objects_test, Y_objects_train, Y_objects_test = train_test_split(X_objects, Y_objects)
 X_sentiments_train, X_sentiments_test, Y_sentiments_train, Y_sentiments_test = train_test_split(X_sentiments, Y_sentiments)
