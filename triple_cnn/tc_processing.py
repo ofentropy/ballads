@@ -104,6 +104,8 @@ def create_ground_truth_vector(labels, lookup, class_num):
 
 
 def decode_predictions(predictions, reverse_lookup, k=10):
+    """
+    """
     _, dim = predictions.shape
     temp = {}
     for i in range(dim):
@@ -116,9 +118,13 @@ def decode_predictions(predictions, reverse_lookup, k=10):
     return labels
 
 
-def test_model(n, model, reverse_lookup, k=10, images_dir="images/"):
+def test_model(n, model, reverse_lookup, k=10, images_dir="images/", chosen=None):
+    """
+
+    """
     total_num = 7703 
-    chosen = [random.randint(0,total_num) for i in range(n)]
+    if chosen is None:
+        chosen = [random.randint(0,total_num) for i in range(n)]
 
     outputs = {}
     for id in chosen:
