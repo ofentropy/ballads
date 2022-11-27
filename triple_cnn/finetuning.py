@@ -60,17 +60,20 @@ scenes_path = "scenes_inceptionv3.h5"
 sentiments_path = "sentiments_inceptionv3.h5"
 
 
-def load_model(model_path, num_labels):
-    model = MultiLabelCNN(num_labels)
+def load_model(model_path, num_labels, metrics=None):
+    if metrics is not None:
+        model = MultiLabelCNN(num_labels, metrics)
+    else:
+        model = MultiLabelCNN(num_labels)
     model.load_weights(model_path)
     return model
 
 
-def finetune(model_path, url_to_labels, labels_lookup, url_file_lookup, num_labels):
+def finetune(model_path, url_to_labels, labels_lookup, url_file_lookup, num_labels, metric="accuracy"):
     X, Y = load_images_and_get_ground_truths(url_to_labels, labels_lookup, url_file_lookup, num_labels)
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y)
-    model = MultiLabelCNN(num_labels)
-    model_checkpoint = ModelCheckpoint(model_path, monitor="accuracy",verbose=1, save_best_only=True)
+    model = MultiLabelCNN(num_labels, [metric])
+    model_checkpoint = ModelCheckpoint(model_path, monitor=metric,verbose=1, save_best_only=True)
     model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
         validation_data=(X_test,Y_test), callbacks=[model_checkpoint])
     return model
