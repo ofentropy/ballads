@@ -12,7 +12,7 @@ from tc_processing import *
 from sklearn.model_selection import train_test_split
 
 
-def MultiLabelCNN(num_labels):
+def MultiLabelCNN(num_labels, metrics=['accuracy']):
     base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(299,299,3))
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
@@ -24,7 +24,7 @@ def MultiLabelCNN(num_labels):
     for layer in base_model.layers:
         layer.trainable = False
     
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=metrics)
 
     return model
 
@@ -54,6 +54,10 @@ common_url_to_scenes = get_img_labels_from_csv("data/common_url_to_scenes.csv", 
 
 BATCH_SIZE = 1
 EPOCHS = 5
+
+objects_path = "objects_inceptionv3.h5"
+scenes_path = "scenes_inceptionv3.h5"
+sentiments_path = "sentiments_inceptionv3.h5"
 
 
 def load_model(model_path, num_labels):
