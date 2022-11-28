@@ -44,26 +44,28 @@ def make_quatrains_for_single_ballad(ballad, pattern):
     quatrains = []
     line_count = len(ballad_lines)
     for line_index, line in enumerate(ballad_lines):
-        if pattern == "AABB":
-            if line_count >= line_index + 2:
-                cleared_line_1 = re.sub(r'[^A-Za-z ]+', '', line).split()
-                cleared_line_2 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+1]).split()
-                if len(cleared_line_1) > 0 and len(cleared_line_2) > 0:
+        if line_count >= line_index + 4:
+            cleared_line_1 = re.sub(r'[^A-Za-z ]+', '', line).split()
+            cleared_line_2 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+1]).split()
+            cleared_line_3 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+2]).split()
+            cleared_line_4 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+3]).split()
+            if len(cleared_line_1) > 0 and len(cleared_line_2) > 0 \
+              and len(cleared_line_3) > 0 and len(cleared_line_4) > 0:
+                if pattern == "AABB":
                     if do_they_rhyme(cleared_line_1[-1].lower(), cleared_line_2[-1].lower()):
+                        # checks if 1st and 2nd line rhyme
                         rhymes_so_far += 1
-                        rhyming_lines.extend([line.strip(), ballad_lines[line_index+1].strip()])
-                    if rhymes_so_far >= 2:
+                        AA = True
+                    if do_they_rhyme(cleared_line_3[-1].lower(), cleared_line_4[-1].lower()):
+                        # checks if 3rd and 4th line rhyme
+                        rhymes_so_far += 1
+                        BB = True
+                    if AA and BB and rhymes_so_far >= 2:
+                        rhyming_lines = [l.strip() for l in ballad_lines[line_index:line_index+4]]
                         quatrains.append(rhyming_lines)
                         rhyming_lines = []
                         rhymes_so_far = 0
-        elif pattern == "ABAB" or pattern == "ABAC" or pattern == "ABCB":
-            if line_count >= line_index + 4:
-                cleared_line_1 = re.sub(r'[^A-Za-z ]+', '', line).split()
-                cleared_line_2 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+1]).split()
-                cleared_line_3 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+2]).split()
-                cleared_line_4 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+3]).split()
-                if len(cleared_line_1) > 0 and len(cleared_line_2) > 0 \
-                and len(cleared_line_3) > 0 and len(cleared_line_4) > 0:
+                else:
                     AA = BB = False
                     if do_they_rhyme(cleared_line_1[-1].lower(), cleared_line_3[-1].lower()):
                         # checks if 1st and 3rd line rhyme
@@ -74,12 +76,13 @@ def make_quatrains_for_single_ballad(ballad, pattern):
                         rhymes_so_far += 1
                         BB = True
                     if (pattern == "ABAB" and AA and BB and rhymes_so_far >= 2) \
-                        or (pattern == "ABAC" and AA and rhymes_so_far >= 1) \
-                        or (pattern == "ABCB" and BB and rhymes_so_far >= 1):
-                            rhyming_lines = [l.strip() for l in ballad_lines[line_index:line_index+4]]
-                            quatrains.append(rhyming_lines)
-                            rhyming_lines = []
-                            rhymes_so_far = 0
+                      or (pattern == "ABAC" and AA and rhymes_so_far >= 1) \
+                      or (pattern == "ABCB" and BB and rhymes_so_far >= 1):
+                          rhyming_lines = [l.strip() for l in ballad_lines[line_index:line_index+4]]
+                          quatrains.append(rhyming_lines)
+                          rhyming_lines = []
+                          rhymes_so_far = 0
+
     return quatrains
 
 
