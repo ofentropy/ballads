@@ -7,6 +7,7 @@ nltk.download('averaged_perceptron_tagger')
 
 from nltk.corpus import wordnet as wn
 from unidecode import unidecode
+import spacy
 
 NOUN_KEY = "NOUN"
 ADJ_KEY = "ADJ"
@@ -16,6 +17,8 @@ ID_KEY = "id"
 IMG_URL_KEY = "image_url"
 
 ABS_KEY = "abstraction.n.06"
+
+nlp = spacy.load("en_core_web_sm")
 
 # GRANULAR 
 def get_adjs_and_nouns(poem, tagset="universal"):
@@ -28,22 +31,31 @@ def get_adjs_and_nouns(poem, tagset="universal"):
     nouns = []
 
     lines = poem.split("\n")
-    for line in lines:
-        words = line.split(" ")
+    poem = " ".join(lines)
+
+    doc = nlp(poem)
+    for token in doc:
+        if token.pos_ == NOUN_KEY:
+            nouns.append(token.text)
+        elif token.pos_ == ADJ_KEY:
+            adjs.append(token.text)
+
+    #for line in lines:
+    #    words = line.split(" ")
 
         # use NLTK tagger to get pos for each word
-        tagged = nltk.pos_tag(words, tagset=tagset)
+    #    tagged = nltk.pos_tag(words, tagset=tagset)
 
-        for word, pos in tagged:
-            word = unidecode(word)
+    #    for word, pos in tagged:
+    #        word = unidecode(word)
 
-            if len(word) > 2: # somewhat arbitrary filter
-                if pos == NOUN_KEY:
-                    nouns.append(word)
-                elif pos == ADJ_KEY:
-                    adjs.append(word)
+    #        if len(word) > 2: # somewhat arbitrary filter
+    #            if pos == NOUN_KEY:
+    #                nouns.append(word)
+    #            elif pos == ADJ_KEY:
+    #                adjs.append(word)
     
-    return adjs, nouns
+    return [*set(adjs)], [*set(nouns)]
 
 
 def split_object_scene(nouns):
