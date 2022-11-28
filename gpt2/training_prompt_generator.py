@@ -86,7 +86,7 @@ def make_quatrains_for_single_ballad(ballad, pattern):
     return quatrains
 
 
-def make_quatrains_and_prompts(ballad, patterns=["ABCB"]):
+def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     """
     :param ballad: dict {"text": string}
     :param pattern: list of strings - must be subset of ["AABB", "ABAB", "ABAC", "ABCB"]
