@@ -4,6 +4,9 @@ sys.path.append("/home/ubuntu/ballads") # change if necessary
 import re
 import nltk
 
+import pronouncing
+pronouncing.init_cmu()
+
 nltk.download("brown")
 nltk.download('universal_tagset')
 nltk.download('wordnet')
@@ -14,6 +17,7 @@ from nltk.corpus import wordnet as wn, brown
 from nltk.metrics.distance import edit_distance
 
 from balladsutil.parser import *
+from evaluation.evaluation_metrics import *
 import random
 
 correct_words = set(brown.words())
@@ -21,7 +25,16 @@ correct_words = set(brown.words())
 wordtags = nltk.ConditionalFreqDist((w.lower(), t) 
         for w, t in brown.tagged_words(tagset="universal"))
 
-def make_quatrains_and_training_prompts(ballad):
+
+def make_quatrains_for_single_ballad(ballad, pattern):
+    """
+    :param ballad: dict {"text": string}
+    :param pattern: string - either "AABB", "ABAB", "ABAC" or "ABCB"
+    :return: list of quatrains fitting pattern
+    """
+
+    assert pattern in ["AABB", "ABAB", "ABAC", "ABCB"]
+
     rhymes_so_far = 0
     rhyming_lines = []
     ballad_text = ballad["text"]
@@ -29,46 +42,101 @@ def make_quatrains_and_training_prompts(ballad):
     ballad_text = re.sub("\\b[Ii]le", "I'll", ballad_text)
     ballad_lines = ballad_text.split("\n")
     quatrains = []
+    line_count = len(ballad_lines)
     for line_index, line in enumerate(ballad_lines):
-        if len(ballad_lines) >= line_index + 2:
-            cleared_line_1 = re.sub(r'[^A-Za-z ]+', '', line)
-            cleared_line_2 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+1])
-            if cleared_line_1[-2:] == cleared_line_2[-2:]:
-                rhymes_so_far += 1
-                rhyming_lines.extend([line.strip(), ballad_lines[line_index+1].strip()])
-            if rhymes_so_far >= 2:
-                quatrains.append(rhyming_lines)
-                rhyming_lines = []
-                rhymes_so_far = 0
+        if pattern == "AABB":
+            if line_count >= line_index + 2:
+                cleared_line_1 = re.sub(r'[^A-Za-z ]+', '', line).split()
+                cleared_line_2 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+1]).split()
+                if len(cleared_line_1) > 0 and len(cleared_line_2) > 0:
+                    if do_they_rhyme(cleared_line_1[-1].lower(), cleared_line_2[-1].lower()):
+                        rhymes_so_far += 1
+                        rhyming_lines.extend([line.strip(), ballad_lines[line_index+1].strip()])
+                    if rhymes_so_far >= 2:
+                        quatrains.append(rhyming_lines)
+                        rhyming_lines = []
+                        rhymes_so_far = 0
+        elif pattern == "ABAB" or pattern == "ABAC" or pattern == "ABCB":
+            if line_count >= line_index + 4:
+                cleared_line_1 = re.sub(r'[^A-Za-z ]+', '', line).split()
+                cleared_line_2 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+1]).split()
+                cleared_line_3 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+2]).split()
+                cleared_line_4 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+3]).split()
+                if len(cleared_line_1) > 0 and len(cleared_line_2) > 0 \
+                and len(cleared_line_3) > 0 and len(cleared_line_4) > 0:
+                    AA = BB = False
+                    if do_they_rhyme(cleared_line_1[-1].lower(), cleared_line_3[-1].lower()):
+                        # checks if 1st and 3rd line rhyme
+                        rhymes_so_far += 1
+                        AA = True
+                    if do_they_rhyme(cleared_line_2[-1].lower(), cleared_line_4[-1].lower()):
+                        # checks if 2nd and 4th line rhyme
+                        rhymes_so_far += 1
+                        BB = True
+                    if (pattern == "ABAB" and AA and BB and rhymes_so_far >= 2) \
+                        or (pattern == "ABAC" and AA and rhymes_so_far >= 1) \
+                        or (pattern == "ABCB" and BB and rhymes_so_far >= 1):
+                            rhyming_lines = [l.strip() for l in ballad_lines[line_index:line_index+4]]
+                            quatrains.append(rhyming_lines)
+                            rhyming_lines = []
+                            rhymes_so_far = 0
+    return quatrains
+
+
+def make_quatrains_and_prompts(ballad, patterns=["ABCB"]):
+    """
+    :param ballad: dict {"text": string}
+    :param pattern: list of strings - must be subset of ["AABB", "ABAB", "ABAC", "ABCB"]
+    :return: list of quatrains fitting pattern, list of prompts per quatrain
+    """
+    ballad_text = ballad["text"]
     
-    corrected_ballad = correct_and_normalize(ballad)
-    training_prompts = []
+    quatrains = []
+    for pattern in patterns:
+        assert pattern in ["AABB", "ABAB", "ABAC", "ABCB"]
+        quatrains += make_quatrains_for_single_ballad(ballad, pattern)
+    
+    corrected_ballad = correct_and_normalize(ballad_text)
+    temp_adjs, temp_objects, temp_scenes = choose_random_words(corrected_ballad)
+    prompts = []
     for i in range(len(quatrains)):
-        training_prompt = generate_training_prompt(corrected_ballad)
+        prompt = generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes)
         for line in quatrains[i]:
-            training_prompt += line + "\n"
-        training_prompts.append(training_prompt)
+            prompt += line + "\n"
+        prompts.append(prompt)
     
-    return quatrains, training_prompts
+    return quatrains, prompts
 
 
-def generate_training_prompt(poem, n_words = 3):
-    temp_adjs, temp_objects, temp_scenes = choose_random_words(poem, n_words)
+def generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes):
     adjs = ["sentiments:"] + get_synonyms(temp_adjs, "ADJ")
     objects = ["objects:"] + get_synonyms(temp_objects, "NOUN")
     scenes = ["scenes:"] + get_synonyms(temp_scenes, "NOUN")
 
-    training_prompt = ""
+    prompt = ""
     selections = [objects, scenes, adjs]
     for group in selections:
         for word in group:
-            training_prompt += word + " "
-        training_prompt += "\n"
-    training_prompt += "ballad: "
+            prompt += word + " "
+        prompt += "\n"
+    prompt += "ballad:\n"
     
-    return training_prompt
+    return prompt
+
+
+def generate_training_prompt(poem, n_words = 3):
+    temp_adjs, temp_objects, temp_scenes = choose_random_words(poem, n_words)
+    return generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes)
+
 
 def get_synonyms(words, pos):
+    """
+    :param words: list of str
+    :param pos: str that indicates part of speech, "NOUN" or "ADJ"
+    """
+
+    assert pos in ["ADJ", "NOUN"]
+
     synonym_words = []
     if words is None:
       return synonym_words
