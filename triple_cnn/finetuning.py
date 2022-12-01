@@ -2,6 +2,7 @@ import sys
 sys.path.append("/home/ubuntu/ballads") # change if necessary
 
 import tensorflow as tf
+import tensorflow_addons as tfa
 from keras.applications.inception_v3 import InceptionV3
 from keras.callbacks import ModelCheckpoint
 from keras.preprocessing import image
@@ -10,6 +11,7 @@ from keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tc_util.importutil import *
 from tc_processing import *
 from sklearn.model_selection import train_test_split
+# from sklearn.metrics import classification_report
 
 
 def MultiLabelCNN(num_labels, metrics):
@@ -58,7 +60,6 @@ EPOCHS = 5
 objects_path = "objects_inceptionv3.h5"
 scenes_path = "scenes_inceptionv3.h5"
 sentiments_path = "sentiments_inceptionv3.h5"
-
 
 def load_model(model_path, num_labels, metrics):
     model = MultiLabelCNN(num_labels, metrics)
