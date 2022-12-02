@@ -106,7 +106,7 @@ train_quatrains = []
 train_prompts = []
 
 for ballad in tqdm(corpus_data):
-    quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad, "ABCB")
+    quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad)
     train_quatrains.extend(train_quatrains)
     train_prompts.extend(prompts)
 
