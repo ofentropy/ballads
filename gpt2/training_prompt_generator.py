@@ -17,7 +17,7 @@ from nltk.corpus import wordnet as wn, brown
 from nltk.metrics.distance import edit_distance
 
 from balladsutil.parser import *
-from evaluation.evaluation_metrics import *
+#from evaluation.evaluation_metrics import *
 import random
 
 correct_words = set(brown.words())
