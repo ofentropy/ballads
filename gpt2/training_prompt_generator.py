@@ -25,6 +25,60 @@ correct_words = set(brown.words())
 wordtags = nltk.ConditionalFreqDist((w.lower(), t) 
         for w, t in brown.tagged_words(tagset="universal"))
 
+from nltk.corpus import cmudict
+import itertools
+d = cmudict.dict()
+
+import pronouncing
+pronouncing.init_cmu()
+
+def get_syllables(word):
+  word = word.lower()
+  entries = d.get(word)
+  if not entries:
+    # entries = [phoney.predict(word).split(" ")]
+    return [[]]
+    # entries = [phoney.predict(word).split(" ")]
+  return entries
+
+def rhymes(word):
+  """
+  Taken from pronouncing module and modified
+  Get words rhyming with a given word.
+  This function may return an empty list if no rhyming words are found in
+  the dictionary, or if the word you pass to the function is itself not
+  found in the dictionary.
+  .. doctest::
+      >>> import pronouncing
+      >>> pronouncing.rhymes("conditioner")
+      ['commissioner', 'parishioner', 'petitioner', 'practitioner']
+  :param word: a word
+  :returns: a list of rhyming words
+  """
+  phones = get_syllables(word)
+  combined_rhymes = []
+  if phones:
+      for element in phones:
+        element = " ".join(element)
+        combined_rhymes.append([w for w in pronouncing.rhyme_lookup.get(pronouncing.rhyming_part(
+                                  element), []) if w != word])
+      combined_rhymes = list(itertools.chain.from_iterable(combined_rhymes))
+      unique_combined_rhymes = sorted(set(combined_rhymes))
+      return unique_combined_rhymes
+  else:
+      return []
+
+def get_rhymes(word):
+  return rhymes(word)
+
+def do_they_rhyme(word1, word2):
+  """
+  referenced: https://stackoverflow.com/a/25714769
+  """
+  if word1 == word2:
+    return True
+  return word1 in rhymes(word2)
+
 
 def make_quatrains_for_single_ballad(ballad, pattern):
     """
