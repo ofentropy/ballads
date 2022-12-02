@@ -51,6 +51,7 @@ def make_quatrains_for_single_ballad(ballad, pattern):
             cleared_line_4 = re.sub(r'[^A-Za-z ]+', '', ballad_lines[line_index+3]).split()
             if len(cleared_line_1) > 0 and len(cleared_line_2) > 0 \
               and len(cleared_line_3) > 0 and len(cleared_line_4) > 0:
+                AA = BB = False
                 if pattern == "AABB":
                     if do_they_rhyme(cleared_line_1[-1].lower(), cleared_line_2[-1].lower()):
                         # checks if 1st and 2nd line rhyme
@@ -66,7 +67,6 @@ def make_quatrains_for_single_ballad(ballad, pattern):
                         rhyming_lines = []
                         rhymes_so_far = 0
                 else:
-                    AA = BB = False
                     if do_they_rhyme(cleared_line_1[-1].lower(), cleared_line_3[-1].lower()):
                         # checks if 1st and 3rd line rhyme
                         rhymes_so_far += 1
