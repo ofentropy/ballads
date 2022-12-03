@@ -50,14 +50,17 @@ new_line_token_id = tokenizer.encode("\n")[0]
 
 def get_last_words(quatrain, tokenizer):
     last_words = []
+    quatrain = quatrain.lower().split("\n")
     for line in quatrain:
         last_word = None
-        line = tokenizer.decode(tokenizer.encode(line))
+        line = [tokenizer.decode(word_id).strip() for word_id in tokenizer.encode(line)]
         for word in line:
             if re.match(r"[a-zA-Z]+", word):
                 last_word = word
-        last_words.append(last_word)
+        if last_word is not None:
+            last_words.append(last_word)
     return last_words
+
 
 def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     """
