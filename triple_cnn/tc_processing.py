@@ -111,15 +111,7 @@ def create_ground_truth_vector(labels, lookup, class_num):
     for i in range(number_dim):
         weights[i] = compute_class_weight('balanced', [0.,1.], ground_truth[:, i])
     return weights"""
-
-
-def modified_precision(y_true, y_pred, threshold=0.5):
-    y_pred = float(y_pred>threshold)
-    k = y_pred.shape[1]
-    precision = tf.keras.metrics.Precision(top_k = k)
-    return precision(y_true, y_pred)
-
-
+    
 def decode_predictions(predictions, reverse_lookup, k=10):
     """
     """
