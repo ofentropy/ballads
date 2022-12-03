@@ -16,6 +16,7 @@ import string
 import math
 import requests
 import json
+from os.path import exists
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
 from datasets import Dataset, load_dataset
 from tqdm import tqdm
@@ -36,6 +37,8 @@ MAX_TOKENS = 128
 BOS_TOKEN = "<|beginoftext|>"
 EOS_TOKEN = "<|endoftext|>"
 PAD_TOKEN = "<|pad|>"
+SAVED_CORRECTED_WORDS_PATH = "correted_words.json"
+
 tokenizer = GPT2Tokenizer.from_pretrained(
     "gpt2",
     bos_token=BOS_TOKEN,
@@ -108,10 +111,16 @@ print("Preparing the prompts...")
 train_quatrains = []
 train_prompts = []
 
+if exists(SAVED_CORRECTED_WORDS_PATH):
+    load_corrected_words(load_path):
+        
 for ballad in tqdm(corpus_data):
     quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad)
     train_quatrains.extend(quatrains)
     train_prompts.extend(prompts)
+    
+if not exists(SAVED_CORRECTED_WORDS_PATH):
+    save_corrected_words(SAVED_CORRECTED_WORDS_PATH)
 
 print(f"Prompts generated. Total number: {len(train_prompts)}")
 print(f"A few sample prompts:")
