@@ -255,13 +255,14 @@ def correct_and_normalize(s):
     ret = []
     for word in all_words:
         if len(word) > 0: 
-            if word.lower() not in correct_words:
+            word_norm = word.lower()
+            if word_norm in CORRECTED_WORDS or word_norm not in correct_words:
                 # source: https://www.geeksforgeeks.org/correcting-words-using-nltk-in-python/
-                rep = CORRECTED_WORDS.get(word.lower(), None)
+                rep = CORRECTED_WORDS.get(word_norm, None)
                 if rep is None:
-                    temp = [(edit_distance(word, w),w) for w in correct_words if w[0]==word[0]]
+                    temp = [(edit_distance(word_norm, w),w) for w in correct_words if w[0]==word_norm[0]]
                     rep = sorted(temp, key = lambda val:val[0])[0][1]
-                    CORRECTED_WORDS[word.lower()] = rep
+                    CORRECTED_WORDS[word_norm] = rep
                 ret.append(rep)
                 # print(f"incorrect: {word}, correct: {sorted(temp, key = lambda val:val[0])[0][1]}")
             else:
