@@ -2,6 +2,7 @@ import sys
 sys.path.append("/home/ubuntu/ballads") # change if necessary
 
 import re
+import json
 import nltk
 
 import pronouncing
@@ -239,7 +240,7 @@ def choose_random_words(poem, n_words = 3):
     
     return chosen
 
-
+CORRECTED_WORDS = {}
 def correct_and_normalize(s):
     """
     :param s: - string (poem)
@@ -256,10 +257,22 @@ def correct_and_normalize(s):
         if len(word) > 0: 
             if word.lower() not in correct_words:
                 # source: https://www.geeksforgeeks.org/correcting-words-using-nltk-in-python/
-                temp = [(edit_distance(word, w),w) for w in correct_words if w[0]==word[0]]
-                ret.append(sorted(temp, key = lambda val:val[0])[0][1])
+                rep = CORRECTED_WORDS.get(word.lower(), None)
+                if rep is None:
+                    temp = [(edit_distance(word, w),w) for w in correct_words if w[0]==word[0]]
+                    rep = sorted(temp, key = lambda val:val[0])[0][1]
+                    CORRECTED_WORDS[word.lower()] = rep
+                ret.append(rep)
                 # print(f"incorrect: {word}, correct: {sorted(temp, key = lambda val:val[0])[0][1]}")
             else:
                 ret.append(word)
     
     return " ".join(ret).lower()
+
+def save_corrected_words(save_path):
+    if not CORRECTED_WORDS:
+        print("ERROR: No corrected words to save!")
+    else:
+        new_file = open(save_path, 'w')
+        print(json.dumps(CORRECTED_WORDS, sort_keys=True, indent=4), file=new_file)
+        new_file.close()
