@@ -70,12 +70,15 @@ def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     for pattern in patterns:
         assert pattern in ["AABB", "ABAB", "ABAC", "ABCB"]
         quatrains += make_quatrains_for_single_ballad(ballad, pattern)
-
+    print(f"There are {len(quatrains)} of quatrains for this ballad.")
     corrected_ballad = correct_and_normalize(ballad_text)
+    print("Ballad corrected.")
     temp_adjs, temp_objects, temp_scenes = choose_random_words(corrected_ballad)
+    print("Random words chosen.")
     prompts = []
     for i in range(len(quatrains)):
         prompt = generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes)
+        print("Prompt generated.")
         prompt_rhymes = ["rhymes:"] + get_last_words(quatrains[i], tokenizer)
         for word in prompt_rhymes:
             prompt += word + " "
@@ -107,7 +110,7 @@ train_prompts = []
 
 for ballad in tqdm(corpus_data):
     quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad)
-    train_quatrains.extend(train_quatrains)
+    train_quatrains.extend(quatrains)
     train_prompts.extend(prompts)
 
 print(f"Prompts generated. Total number: {len(train_prompts)}")
