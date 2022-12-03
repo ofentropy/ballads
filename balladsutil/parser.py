@@ -73,12 +73,15 @@ def split_object_scene(nouns):
             pos = split_name[1]
             if pos == "n":
                 if abs(len(noun) - len(split_name[0])) <= 2: # somewhat arbitrary filter
-                    category = wn.synset(n).hypernym_paths()[0][1].name()
-                    if category == ABS_KEY:
+                    paths = wn.synset(n).hypernym_paths()[0]
+                    if len(paths) <= 1:
                         scene_nouns.append(noun)
                     else:
-                        object_nouns.append(noun)
-
+                        category = paths[1].name()
+                        if category == ABS_KEY:
+                            scene_nouns.append(noun)
+                        else:
+                            object_nouns.append(noun)
     return object_nouns, scene_nouns
 
 
