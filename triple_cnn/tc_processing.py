@@ -113,11 +113,11 @@ def create_ground_truth_vector(labels, lookup, class_num):
     return weights"""
 
 
-def modified_precision(y_true, y_pred, k):
-    y_pred = float(y_pred>0.5)
+def modified_precision(y_true, y_pred, k, threshold=0.5):
+    y_pred = float(y_pred>threshold)
     precision = tf.keras.metrics.Precision(top_k = k)
     return precision(y_true, y_pred)
-    
+
 
 def decode_predictions(predictions, reverse_lookup, k=10):
     """
