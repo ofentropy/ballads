@@ -71,7 +71,7 @@ def finetune(model_path, metrics, url_to_labels, labels_lookup, url_file_lookup,
     X, Y = load_images_and_get_ground_truths(url_to_labels, labels_lookup, url_file_lookup, num_labels)
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y)
     model = MultiLabelCNN(num_labels, metrics)
-    model_checkpoint = ModelCheckpoint(model_path, monitor="accuracy",verbose=1, save_best_only=True)
+    model_checkpoint = ModelCheckpoint(model_path, monitor=metrics[0].name,verbose=1, save_best_only=True)
     model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
         validation_data=(X_test,Y_test), callbacks=[model_checkpoint])
     return model
