@@ -112,7 +112,8 @@ train_quatrains = []
 train_prompts = []
 
 if exists(SAVED_CORRECTED_WORDS_PATH):
-    load_corrected_words(load_path):
+    load_corrected_words(load_path)
+    print("Corrected word dictionary loaded.")
         
 for ballad in tqdm(corpus_data):
     quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad)
@@ -121,6 +122,7 @@ for ballad in tqdm(corpus_data):
     
 if not exists(SAVED_CORRECTED_WORDS_PATH):
     save_corrected_words(SAVED_CORRECTED_WORDS_PATH)
+    print("Corrected word dictionary saved.")
 
 print(f"Prompts generated. Total number: {len(train_prompts)}")
 print(f"A few sample prompts:")
