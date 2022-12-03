@@ -292,10 +292,10 @@ model = TFBalladModel.from_pretrained(
         bos_token_id=tokenizer.bos_token_id
     )
 model.resize_token_embeddings(len(tokenizer))
+model.tokenizer = tokenizer
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
 model.compile()
 model.layers[0].vocab_size = len(tokenizer) # something is wrong with TFGPT2 initialization so this is needed
-model.assign_tokenizer(tokenizer)
 model.summary()
 model.compute_rhyme_loss = True
 
