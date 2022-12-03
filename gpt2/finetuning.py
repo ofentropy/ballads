@@ -29,7 +29,7 @@ print("Loading the dataset...")
 dataset_url = "https://github.com/mckurz/ballads/raw/main/ballads_data3.json"
 response = requests.get(dataset_url)
 corpus_data = json.loads(response.text)
-corpus_data = corpus_data[:500]
+corpus_data = corpus_data[:50]
 print(f"Dataset loaded. There are {len(corpus_data)} ballads.") # should be 6597
 print("Loading the tokenizer...")
 MAX_TOKENS = 128
@@ -123,6 +123,7 @@ def tokenize(prompts, tokenizer=tokenizer):
     # Add start and end token to each ballad
     prompts_to_tokenize = []
     for index, prompt in enumerate(prompts):
+      print(prompt)
       prompt = BOS_TOKEN + prompt + EOS_TOKEN
       prompts_to_tokenize.append(prompt)
 
