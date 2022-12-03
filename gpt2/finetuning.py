@@ -123,7 +123,6 @@ def tokenize(prompts, tokenizer=tokenizer):
     # Add start and end token to each ballad
     prompts_to_tokenize = []
     for index, prompt in enumerate(prompts):
-      print(prompt)
       prompt = BOS_TOKEN + prompt + EOS_TOKEN
       prompts_to_tokenize.append(prompt)
 
@@ -316,7 +315,7 @@ def generate_sample(model, tokenizer, prompt="<|beginoftext|>sentiments: happine
 
 for epoch in range(EPOCHS):
   # randomize the dataset
-  train_dataset = tokenize(train_quatrains)
+  train_dataset = tokenize(train_prompts)
   train_dataset = tf.data.Dataset.from_tensor_slices({"input_ids": tf.convert_to_tensor(train_dataset["input_ids"]),
                                                       "attention_mask": tf.convert_to_tensor(train_dataset["attention_mask"])})
   #train_dataset = train_dataset.shuffle(1000).batch(BATCH_SIZE,drop_remainder=False)
