@@ -70,11 +70,9 @@ def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     for pattern in patterns:
         assert pattern in ["AABB", "ABAB", "ABAC", "ABCB"]
         quatrains += make_quatrains_for_single_ballad(ballad, pattern)
-    print(f"There are {len(quatrains)} of quatrains for this ballad.")
-    corrected_ballad = correct_and_normalize(ballad_text)
-    print("Ballad corrected.")
+    #corrected_ballad = correct_and_normalize(ballad_text)
+    corrected_ballad = ballad_text
     temp_adjs, temp_objects, temp_scenes = choose_random_words(corrected_ballad)
-    print("Random words chosen.")
     prompts = []
     for i in range(len(quatrains)):
         prompt = generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes)
