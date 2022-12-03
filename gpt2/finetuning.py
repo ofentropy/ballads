@@ -29,7 +29,7 @@ print("Loading the dataset...")
 dataset_url = "https://github.com/mckurz/ballads/raw/main/ballads_data3.json"
 response = requests.get(dataset_url)
 corpus_data = json.loads(response.text)
-corpus_data = corpus_data[:50]
+#corpus_data = corpus_data[:50]
 print(f"Dataset loaded. There are {len(corpus_data)} ballads.") # should be 6597
 print("Loading the tokenizer...")
 MAX_TOKENS = 128
@@ -73,8 +73,8 @@ def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     for pattern in patterns:
         assert pattern in ["AABB", "ABAB", "ABAC", "ABCB"]
         quatrains += make_quatrains_for_single_ballad(ballad, pattern)
-    #corrected_ballad = correct_and_normalize(ballad_text)
-    corrected_ballad = ballad_text
+    corrected_ballad = correct_and_normalize(ballad_text)
+    #corrected_ballad = ballad_text
     temp_adjs, temp_objects, temp_scenes = choose_random_words(corrected_ballad)
     prompts = []
     for i in range(len(quatrains)):
@@ -307,21 +307,18 @@ valid_dataset = tf.data.Dataset.from_tensor_slices({"input_ids": tf.convert_to_t
 valid_dataset = valid_dataset.batch(BATCH_SIZE,drop_remainder=False)
 """
 
-def generate_sample(model, tokenizer, prompt="<|beginoftext|>sentiments: happiness pleasure\nobjects: tree crown\nscenes: coronation palace\nrhymes: victory crown beer gown\nballad:\n"):
+def generate_sample(model, tokenizer, prompt="<|beginoftext|>objects: tree crown\nscenes: coronation palace\nsentiments: happiness glory\nrhymes: victory crown beer gown\nballad:\n"):
   input_ids = tokenizer.encode(prompt, return_tensors='tf')
   sample_output = model.generate(input_ids, do_sample=True, max_length=MAX_TOKENS, top_k=50, top_p=0.95, num_return_sequences=1, no_repeat_ngram_size=2)
   generated_text = tokenizer.decode(sample_output[0], skip_special_tokens=True)
   return generated_text.strip()
 
-for epoch in range(EPOCHS):
-  # randomize the dataset
-  train_dataset = tokenize(train_prompts)
-  train_dataset = tf.data.Dataset.from_tensor_slices({"input_ids": tf.convert_to_tensor(train_dataset["input_ids"]),
-                                                      "attention_mask": tf.convert_to_tensor(train_dataset["attention_mask"])})
-  #train_dataset = train_dataset.shuffle(1000).batch(BATCH_SIZE,drop_remainder=False)
-  train_dataset = train_dataset.batch(BATCH_SIZE,drop_remainder=False)
-  #
+train_dataset = tokenize(train_prompts)
+train_dataset = tf.data.Dataset.from_tensor_slices({"input_ids": tf.convert_to_tensor(train_dataset["input_ids"]),
+                                                    "attention_mask": tf.convert_to_tensor(train_dataset["attention_mask"])})
+train_dataset = train_dataset.shuffle(1000).batch(BATCH_SIZE,drop_remainder=False)
 
+for epoch in range(EPOCHS):
   batch_loop = tqdm(train_dataset)
   batch_loop.set_description(f"Epoch {epoch}")
   for batch_index, batch in enumerate(batch_loop):
@@ -333,8 +330,9 @@ for epoch in range(EPOCHS):
 
     batch_loop.set_postfix_str(f"GPT loss: {float(output.loss)}")
 
-    if batch_index % 200 == 0 and batch_index != 0:
+    if batch_index % 50 == 0 and batch_index != 0:
       generated_ballad = "\n------------------------------\n" + generate_sample(model, tokenizer) + "\n------------------------------\n"
+      print(generated_ballad)
       with open("generated_ballads.txt", "a") as f:
           f.write(generated_ballad)
     if batch_index % 400 == 0 and batch_index != 0:
