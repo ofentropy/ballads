@@ -76,7 +76,7 @@ def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     prompts = []
     for i in range(len(quatrains)):
         prompt = generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes)
-        prompt_rhymes = ["rhymes:"] + get_last_words(quatrains[i])
+        prompt_rhymes = ["rhymes:"] + get_last_words(quatrains[i], tokenizer)
         for word in prompt_rhymes:
             prompt += word + " "
         prompt += "\n"
