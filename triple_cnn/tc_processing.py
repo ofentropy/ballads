@@ -7,6 +7,7 @@ from tqdm import tqdm
 import json
 from collections import Counter
 import random
+from sklearn.utils.class_weight import compute_class_weight
 
 img_h, img_w = (299, 299)
 
@@ -102,6 +103,21 @@ def create_ground_truth_vector(labels, lookup, class_num):
         ground_truth[idx] = 1
     return ground_truth
 
+
+"""def get_class_weights(ground_truth):
+    # source: https://stackoverflow.com/a/48700950
+    number_dim = ground_truth.shape[1]
+    weights = np.empty([number_dim, 2])
+    for i in range(number_dim):
+        weights[i] = compute_class_weight('balanced', [0.,1.], ground_truth[:, i])
+    return weights"""
+
+
+def modified_precision(y_true, y_pred, k):
+    y_pred = float(y_pred>0.5)
+    precision = tf.keras.metrics.Precision(top_k = k)
+    return precision(y_true, y_pred)
+    
 
 def decode_predictions(predictions, reverse_lookup, k=10):
     """
