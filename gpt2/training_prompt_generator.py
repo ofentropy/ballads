@@ -8,6 +8,7 @@ import pronouncing
 pronouncing.init_cmu()
 
 nltk.download("brown")
+nltk.download("cmudict")
 nltk.download('universal_tagset')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
@@ -17,7 +18,7 @@ from nltk.corpus import wordnet as wn, brown
 from nltk.metrics.distance import edit_distance
 
 from balladsutil.parser import *
-from evaluation.evaluation_metrics import do_they_rhyme
+# from evaluation.evaluation_metrics import *
 import random
 
 correct_words = set(brown.words())
@@ -251,12 +252,13 @@ def correct_and_normalize(s):
     all_words = (" ".join(new_s.split("\n"))).split(" ")
     ret = []
     for word in all_words:
-        if len(word) > 0 and word.lower() not in correct_words:
-            # source: https://www.geeksforgeeks.org/correcting-words-using-nltk-in-python/
-            temp = [(edit_distance(word, w),w) for w in correct_words if w[0]==word[0]]
-            ret.append(sorted(temp, key = lambda val:val[0])[0][1])
-            # print(f"incorrect: {word}, correct: {sorted(temp, key = lambda val:val[0])[0][1]}")
-        else:
-            ret.append(word)
+        if len(word) > 0: 
+            if word.lower() not in correct_words:
+                # source: https://www.geeksforgeeks.org/correcting-words-using-nltk-in-python/
+                temp = [(edit_distance(word, w),w) for w in correct_words if w[0]==word[0]]
+                ret.append(sorted(temp, key = lambda val:val[0])[0][1])
+                # print(f"incorrect: {word}, correct: {sorted(temp, key = lambda val:val[0])[0][1]}")
+            else:
+                ret.append(word)
     
     return " ".join(ret).lower()
