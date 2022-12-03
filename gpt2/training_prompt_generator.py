@@ -209,8 +209,9 @@ def get_synonyms(words, pos):
                     # make sure word can be proper part of speech
                     if pos in wordtags[syn]:
                         synonyms.append(syn)
-        choice = random.sample(synonyms, 1)[0] # randomly pick one synonym
-        synonym_words.append(choice)
+        if len(synonyms) > 0:
+            choice = random.sample(synonyms, 1)[0] # randomly pick one synonym
+            synonym_words.append(choice)
     return synonym_words
 
 
