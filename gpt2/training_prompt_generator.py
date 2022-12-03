@@ -269,6 +269,23 @@ def correct_and_normalize(s):
     
     return " ".join(ret).lower()
 
+def load_corrected_words(load_path):
+    if CORRECTED_WORDS:
+        while True:
+            overwrite = input("WARNING: CORRECTED_WORDS is already populated! Are you sure you want to overwrite it? (y/n)")
+            if overwrite == "n":
+                print("Quitting...")
+                return
+            if overwrite == "y":
+                print("Overwriting...")
+                break
+    f = open(load_path, 'r')
+    CORRECTED_WORDS = json.loads(f.read())
+    f.close()
+    print("CORRECTED_WORDS has been updated.")
+    return json.loads(f.read())
+        
+
 def save_corrected_words(save_path):
     if not CORRECTED_WORDS:
         print("ERROR: No corrected words to save!")
