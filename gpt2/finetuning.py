@@ -56,7 +56,7 @@ print("Preparing the prompts...")
 train_quatrains = []
 train_prompts = []
 
-print(len(CORRECTED_WORDS))
+print("Corrected words: ", CORRECTED_WORDS)
 if exists(SAVED_CORRECTED_WORDS_PATH):
     load_corrected_words(SAVED_CORRECTED_WORDS_PATH)
     print("Corrected word dictionary loaded.")
