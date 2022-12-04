@@ -30,7 +30,7 @@ if exists(gpt2_vocab_path):
 else:
   GPT2_VOCAB = list(tokenizer.encoder.keys())
   f = open(gpt2_vocab_path, "w")
-  print(json.dumps(GPT2_VOCAB, sort_keys=True, indent=4), file=f)
+  print(json.dumps(GPT2_VOCAB), file=f)
   f.close()
 
 def init_cmu(filehandle=None):
