@@ -262,6 +262,7 @@ def correct_and_normalize(s):
 
     :return: 'corrected' poem (spellings adjusted) for random sampling
     """
+    global CORRECTED_WORDS
     new_s = ""
     for ch in unidecode(s):
         if ch.isalpha() or ch.isspace():
@@ -286,6 +287,7 @@ def correct_and_normalize(s):
     return " ".join(ret).lower()
 
 def load_corrected_words(load_path):
+    global CORRECTED_WORDS
     if CORRECTED_WORDS:
         while True:
             overwrite = input("WARNING: CORRECTED_WORDS is already populated! Are you sure you want to overwrite it? (y/n)")
