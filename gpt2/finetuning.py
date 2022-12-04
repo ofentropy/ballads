@@ -1,5 +1,6 @@
 import sys
 sys.path.append("/home/ubuntu/ballads")
+import gpt2.training_prompt_generator # ?
 from gpt2.training_prompt_generator import *
 
 import os
@@ -55,6 +56,7 @@ print("Preparing the prompts...")
 train_quatrains = []
 train_prompts = []
 
+print(len(CORRECTED_WORDS))
 if exists(SAVED_CORRECTED_WORDS_PATH):
     load_corrected_words(SAVED_CORRECTED_WORDS_PATH)
     print("Corrected word dictionary loaded.")
