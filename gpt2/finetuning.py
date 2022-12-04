@@ -81,10 +81,15 @@ if not exists(SAVED_PROMPTS_PATH):
         pickle.dump(train_prompts, new_file)
 
 print(f"Prompts generated. Total number: {len(train_prompts)}")
+
 print(f"A few sample prompts:")
 for prompt in random.sample(train_prompts, k=3):
     print(prompt)
     print()
+    
+print(f"Removing too long prompts...")
+train_prompts = [prompt for prompt in train_prompts if len(tokenizer.encode(prompt)) <= MAX_TOKENS - 2] # two spaces left for BOS and EOS
+print(f"There are {len(train_prompts)} prompts remaining.")
 
 def tokenize(prompts, tokenizer=tokenizer):
     # Add start and end token to each ballad
@@ -113,7 +118,7 @@ from transformers.modeling_tf_outputs import TFCausalLMOutputWithCrossAttentions
 from transformers.modeling_tf_utils import input_processing, TFModelInputType, TFCausalLanguageModelingLoss
 from typing import Union
 
-EPOCHS = 10
+EPOCHS = 100
 INITIAL_LEARNING_RATE = 0.0001
 DECAY_STEPS = 300
 DECAY_RATE = 0.7
@@ -142,12 +147,31 @@ model.layers[0].vocab_size = len(tokenizer) # something is wrong with TFGPT2 ini
 model.summary()
 
 import time
-"""
-valid_dataset = tokenize(valid_quatrains)
-valid_dataset = tf.data.Dataset.from_tensor_slices({"input_ids": tf.convert_to_tensor(valid_dataset["input_ids"]),
-                                                      "attention_mask": tf.convert_to_tensor(valid_dataset["attention_mask"])})
-valid_dataset = valid_dataset.batch(BATCH_SIZE,drop_remainder=False)
-"""
+
+random.seed(10)
+valid_id = set(random.choices(range(0, len(train_prompts)), k=int(len(train_prompts)*0.01)))
+train_prompts = [prompt for id, prompt in enumerate(train_prompts) if id not in valid_id]
+valid_prompts = [prompt for id, prompt in enumerate(train_prompts) if id in valid_id]
+
+train_prompts = tokenize(train_prompts)
+print(f"Tokenized train prompts. Length: {len(train_prompts)}")
+valid_prompts = tokenize(valid_prompts)
+print(f"Tokenized validation prompts. Length: {len(valid_prompts)}")
+
+output_types = {"input_ids": tf.int32, "attention_mask": tf.int32}
+
+def train_dataset_gen():
+    for i in range(len(train_dataset["input_ids"])):
+        yield {"input_ids" : tf.convert_to_tensor(train_prompts["input_ids"][i], dtype=tf.int32),
+              "attention_mask": tf.convert_to_tensor(train_prompts["attention_mask"][i], dtype=tf.int32)}
+        
+def valid_dataset_gen():
+    for i in range(len(valid_dataset["input_ids"])):
+        yield {"input_ids" : tf.convert_to_tensor(valid_prompts["input_ids"][i], dtype=tf.int32),
+              "attention_mask": tf.convert_to_tensor(valid_prompts["attention_mask"][i], dtype=tf.int32)}
+
+train_dataset = tf.data.Dataset.from_generator(train_dataset_gen, output_types=output_types).batch(BATCH_SIZE, drop_remainder=False)
+valid_dataset = tf.data.Dataset.from_generator(valid_dataset_gen, output_types=output_types).batch(BATCH_SIZE, drop_remainder=False)
 
 def generate_sample(model, tokenizer, prompt="<|beginoftext|>objects: tree crown\nscenes: coronation palace\nsentiments: happiness glory\nrhymes: victory crown beer gown\nballad:\n"):
   input_ids = tokenizer.encode(prompt, return_tensors='tf')
@@ -155,11 +179,9 @@ def generate_sample(model, tokenizer, prompt="<|beginoftext|>objects: tree crown
   generated_text = tokenizer.decode(sample_output[0], skip_special_tokens=True)
   return generated_text.strip()
 
-train_dataset = tokenize(train_prompts)
-train_dataset = tf.data.Dataset.from_tensor_slices({"input_ids": tf.convert_to_tensor(train_dataset["input_ids"]),
-                                                    "attention_mask": tf.convert_to_tensor(train_dataset["attention_mask"])})
-train_dataset = train_dataset.shuffle(20000).batch(BATCH_SIZE,drop_remainder=False)
-
+valid_loss_history = []
+train_loss_history = []
+patience = 2
 for epoch in range(EPOCHS):
   batch_loop = tqdm(train_dataset)
   batch_loop.set_description(f"Epoch {epoch}")
@@ -172,21 +194,29 @@ for epoch in range(EPOCHS):
 
     batch_loop.set_postfix_str(f"GPT loss: {float(output.loss)}")
 
-    if batch_index % 100 == 0 and batch_index != 0:
+    if batch_index % 500 == 0 and batch_index != 0:
       generated_ballad = "\n------------------------------\n" + generate_sample(model, tokenizer) + "\n------------------------------\n"
       print(generated_ballad)
       with open("generated_ballads.txt", "a") as f:
           f.write(generated_ballad)
-    if batch_index % 400 == 0 and batch_index != 0:
+    if batch_index % 3000 == 0 and batch_index != 0:
       model.save_weights(f"checkpoints/gpt2-e{epoch}-b{batch_index}")
-
-  """
+  print("Epoch finished. Validation...")
   val_batch_loop = tqdm(valid_dataset)
   valid_loss = 0
   valid_batch_no = 0
   for batch_index, batch in enumerate(val_batch_loop):
     valid_batch_no += 1
-    output = model(input_ids=batch["input_ids"], labels=batch["labels"], attention_mask=batch["attention_mask"], training=False)
+    output = model(input_ids=batch["input_ids"], labels=batch["input_ids"], attention_mask=batch["attention_mask"], training=False)
     valid_loss += float(output.loss)
-  print(f"Validation loss after epoch {epoch}: {valid_loss/valid_batch_no}")
-  """
+  valid_loss = valid_loss/valid_batch_no
+  print(f"Validation loss after epoch {epoch}: {valid_loss}")
+  valid_loss_history.append(valid_loss)
+  if valid_loss > min(valid_loss_history):
+    printf(f"Validation loss started rising! After this epoch: {valid_loss}, minimum so far: {min(valid_loss_history)}")
+    patience -= 1
+  else:
+    patience = 2
+  if patience == 0:
+    print("Finished training.")
+    break
