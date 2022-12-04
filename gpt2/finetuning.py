@@ -173,6 +173,10 @@ def valid_dataset_gen():
 train_dataset = tf.data.Dataset.from_generator(train_dataset_gen, output_types=output_types).batch(BATCH_SIZE, drop_remainder=False)
 valid_dataset = tf.data.Dataset.from_generator(valid_dataset_gen, output_types=output_types).batch(BATCH_SIZE, drop_remainder=False)
 
+train_dataset = train_dataset.apply(tf.data.experimental.assert_cardinality(len(train_prompts["input_ids"]) // BATCH_SIZE ))
+valid_dataset = valid_dataset.apply(tf.data.experimental.assert_cardinality(len(valid_prompts["input_ids"]) // BATCH_SIZE ))
+
+
 def generate_sample(model, tokenizer, prompt="<|beginoftext|>objects: tree crown\nscenes: coronation palace\nsentiments: happiness glory\nrhymes: victory crown beer gown\nballad:\n"):
   input_ids = tokenizer.encode(prompt, return_tensors='tf')
   sample_output = model.generate(input_ids, do_sample=True, max_length=MAX_TOKENS, top_k=50, top_p=0.95, num_return_sequences=1, no_repeat_ngram_size=2)
