@@ -150,23 +150,23 @@ import time
 
 random.seed(10)
 valid_id = set(random.choices(range(0, len(train_prompts)), k=int(len(train_prompts)*0.01)))
-train_prompts = [prompt for id, prompt in enumerate(train_prompts) if id not in valid_id]
-valid_prompts = [prompt for id, prompt in enumerate(train_prompts) if id in valid_id]
+train_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id not in valid_id]
+valid_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id in valid_id]
 
-train_prompts = tokenize(train_prompts)
+train_prompts = tokenize(train_prompts_temp)
 print(f"Tokenized train prompts. Length: {len(train_prompts)}")
-valid_prompts = tokenize(valid_prompts)
+valid_prompts = tokenize(valid_prompts_temp)
 print(f"Tokenized validation prompts. Length: {len(valid_prompts)}")
 
 output_types = {"input_ids": tf.int32, "attention_mask": tf.int32}
 
 def train_dataset_gen():
-    for i in range(len(train_dataset["input_ids"])):
+    for i in range(len(train_prompts["input_ids"])):
         yield {"input_ids" : tf.convert_to_tensor(train_prompts["input_ids"][i], dtype=tf.int32),
               "attention_mask": tf.convert_to_tensor(train_prompts["attention_mask"][i], dtype=tf.int32)}
         
 def valid_dataset_gen():
-    for i in range(len(valid_dataset["input_ids"])):
+    for i in range(len(valid_prompts["input_ids"])):
         yield {"input_ids" : tf.convert_to_tensor(valid_prompts["input_ids"][i], dtype=tf.int32),
               "attention_mask": tf.convert_to_tensor(valid_prompts["attention_mask"][i], dtype=tf.int32)}
 
