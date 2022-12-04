@@ -51,62 +51,6 @@ print(f"Tokenizer loaded! Size: {len(tokenizer)}.")
 encoded_punctuation = [tokenizer.encode(char)[0] for char in string.punctuation]
 new_line_token_id = tokenizer.encode("\n")[0]
 
-def get_last_words(quatrain, tokenizer):
-    last_words = []
-    for line in quatrain:
-        last_word = None
-        line = [tokenizer.decode(word_id).lower().strip() for word_id in tokenizer.encode(line)]
-        for word in line:
-            if re.match(r"[a-zA-Z]+", word):
-                last_word = word
-        if last_word is not None:
-            last_words.append(last_word)
-    return last_words
-
-
-def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
-    """
-    :param ballad: dict {"text": string}
-    :param pattern: list of strings - must be subset of ["AABB", "ABAB", "ABAC", "ABCB"]
-    :return: list of quatrains fitting pattern, list of prompts per quatrain
-    """
-    ballad_text = ballad["text"]
-
-    quatrains = []
-    for pattern in patterns:
-        assert pattern in ["AABB", "ABAB", "ABAC", "ABCB"]
-        quatrains += make_quatrains_for_single_ballad(ballad, pattern)
-    corrected_ballad = correct_and_normalize(ballad_text)
-    #corrected_ballad = ballad_text
-    temp_adjs, temp_objects, temp_scenes = choose_random_words(corrected_ballad)
-    prompts = []
-    for i in range(len(quatrains)):
-        prompt = generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes)
-        prompt_rhymes = ["rhymes:"] + get_last_words(quatrains[i], tokenizer)
-        for word in prompt_rhymes:
-            prompt += word + " "
-        prompt += "\n"
-        prompt += "ballad:\n"
-        for line in quatrains[i]:
-            prompt += line + "\n"
-        prompts.append(prompt)
-
-    return quatrains, prompts
-
-def generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes):
-    adjs = ["sentiments:"] + get_synonyms(temp_adjs, "ADJ")
-    objects = ["objects:"] + get_synonyms(temp_objects, "NOUN")
-    scenes = ["scenes:"] + get_synonyms(temp_scenes, "NOUN")
-    prompt = ""
-    selections = [objects, scenes, adjs]
-    for group in selections:
-        for word in group:
-            prompt += word + " "
-        prompt += "\n"
-    #prompt += "ballad:\n"
-
-    return prompt
-
 print("Preparing the prompts...")
 train_quatrains = []
 train_prompts = []
@@ -116,7 +60,7 @@ if exists(SAVED_CORRECTED_WORDS_PATH):
     print("Corrected word dictionary loaded.")
         
 for ballad in tqdm(corpus_data):
-    quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad)
+    quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad, tokenizer, patterns=["AABB", "ABAB", "ABAC", "ABCB"])
     train_quatrains.extend(quatrains)
     train_prompts.extend(prompts)
     
@@ -148,10 +92,6 @@ def tokenize(prompts, tokenizer=tokenizer):
 
     return output
 
-print(quatrains[0])
-last_words = get_last_words(quatrains[0], tokenizer)
-print(last_words)
-
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
@@ -160,134 +100,13 @@ from transformers import TFGPT2PreTrainedModel, TFGPT2MainLayer, BatchEncoding
 from transformers.modeling_tf_outputs import TFCausalLMOutputWithCrossAttentions
 from transformers.modeling_tf_utils import input_processing, TFModelInputType, TFCausalLanguageModelingLoss
 from typing import Union
-import inspect
-
-class RhymeLoss(TFCausalLMOutputWithCrossAttentions):
-  def __init__(self, rhyme_loss, *inputs, **kwargs):
-    super(TFCausalLMOutputWithCrossAttentions, self).__init__(*inputs, **kwargs)
-    self.rhyme_loss = rhyme_loss
-
-class TFBalladModel(TFGPT2PreTrainedModel, TFCausalLanguageModelingLoss):
-    def __init__(self, config, *inputs, **kwargs):
-        super(TFBalladModel, self).__init__(config, *inputs, **kwargs)
-        self.transformer = TFGPT2MainLayer(config, name="transformer")
-        self.compute_rhyme_loss = kwargs.get("compute_rhyme_loss", False)
-        self.tokenizer = kwargs.get("tokenizer", None)
-
-    def get_output_embeddings(self):
-        return self.get_input_embeddings()
-
-    def set_output_embeddings(self, value):
-        self.set_input_embeddings(value)
-
-    def prepare_inputs_for_generation(self, inputs, past=None, use_cache=None, **kwargs):
-        token_type_ids = kwargs.get("token_type_ids", None)
-        # only last token for inputs_ids if past is defined in kwargs
-        if past:
-            inputs = tf.expand_dims(inputs[:, -1], -1)
-            if token_type_ids is not None:
-                token_type_ids = tf.expand_dims(token_type_ids[:, -1], -1)
-
-        position_ids = kwargs.get("position_ids", None)
-        attention_mask = kwargs.get("attention_mask", None)
-
-        if attention_mask is not None and position_ids is None:
-            position_ids = tf.math.cumsum(attention_mask, axis=-1, exclusive=True)
-            if past:
-                position_ids = tf.expand_dims(position_ids[:, -1], -1)
-
-        return {
-            "input_ids": inputs,
-            "attention_mask": attention_mask,
-            "position_ids": position_ids,
-            "past": past,
-            "use_cache": use_cache,
-            "token_type_ids": token_type_ids,
-        }
-
-    def call(
-        self,
-        input_ids: Optional[TFModelInputType] = None,
-        past: Optional[Tuple[Tuple[Union[np.ndarray, tf.Tensor]]]] = None,
-        attention_mask: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        token_type_ids: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        position_ids: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        head_mask: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        inputs_embeds: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        encoder_hidden_states: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        encoder_attention_mask: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        use_cache: Optional[bool] = None,
-        output_attentions: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = True,
-        labels: Optional[Union[np.ndarray, tf.Tensor]] = None,
-        training: Optional[bool] = False,
-    ) -> Union[TFCausalLMOutputWithCrossAttentions, Tuple[tf.Tensor]]:
-
-        transformer_outputs = self.transformer(
-            input_ids=input_ids,
-            past=past,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds,
-            encoder_hidden_states=encoder_hidden_states,
-            encoder_attention_mask=encoder_attention_mask,
-            use_cache=use_cache,
-            output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
-            training=training,
-        )
-        hidden_states = transformer_outputs[0]
-        logits = self.transformer.wte(hidden_states, mode="linear")
-
-        loss = None
-        if labels is not None:
-            # shift labels to the left and cut last logit token
-            shifted_logits = logits[:, :-1]
-            shifted_labels = labels[:, 1:]
-            loss = self.hf_compute_loss(shifted_labels, shifted_logits)
-
-        total_loss = RhymeLoss(
-          loss=loss,
-          logits=logits,
-          rhyme_loss = None,
-          past_key_values=transformer_outputs.past_key_values,
-          hidden_states=transformer_outputs.hidden_states,
-          attentions=transformer_outputs.attentions,
-          cross_attentions=transformer_outputs.cross_attentions,
-        )
-        return total_loss
-
-        #if not return_dict:
-        #    output = (logits,) + transformer_outputs[1:]
-        #    return ((loss,) + output) if loss is not None else output
-
-    def serving_output(self, output):
-        pkv = tf.convert_to_tensor(output.past_key_values) if self.config.use_cache else None
-        hs = tf.convert_to_tensor(output.hidden_states) if self.config.output_hidden_states else None
-        attns = tf.convert_to_tensor(output.attentions) if self.config.output_attentions else None
-        cross_attns = (
-            tf.convert_to_tensor(output.cross_attentions)
-            if self.config.output_attentions
-            and self.config.add_cross_attention
-            and output.cross_attentions is not None
-            else None
-        )
-
-        return TFCausalLMOutputWithCrossAttentions(
-            logits=output.logits, past_key_values=pkv, hidden_states=hs, attentions=attns, cross_attentions=cross_attns
-        )
 
 EPOCHS = 10
 INITIAL_LEARNING_RATE = 0.0001
 DECAY_STEPS = 300
 DECAY_RATE = 0.7
 BATCH_SIZE = 16
-LM_LOSS_WEIGHT = 0.4
-RHYME_LOSS_WEIGHT=0.6
+MODEL_TYPE = "gpt-medium"
 
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE,
@@ -296,19 +115,19 @@ lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     staircase=True)
 
 model = TFBalladModel.from_pretrained(
-        "gpt2",
+        MODEL_TYPE,
         use_cache=False,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         bos_token_id=tokenizer.bos_token_id
     )
+
 model.resize_token_embeddings(len(tokenizer))
 model.tokenizer = tokenizer
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
 model.compile()
 model.layers[0].vocab_size = len(tokenizer) # something is wrong with TFGPT2 initialization so this is needed
 model.summary()
-model.compute_rhyme_loss = True
 
 import time
 """
@@ -327,7 +146,7 @@ def generate_sample(model, tokenizer, prompt="<|beginoftext|>objects: tree crown
 train_dataset = tokenize(train_prompts)
 train_dataset = tf.data.Dataset.from_tensor_slices({"input_ids": tf.convert_to_tensor(train_dataset["input_ids"]),
                                                     "attention_mask": tf.convert_to_tensor(train_dataset["attention_mask"])})
-train_dataset = train_dataset.shuffle(1000).batch(BATCH_SIZE,drop_remainder=False)
+train_dataset = train_dataset.shuffle(20000).batch(BATCH_SIZE,drop_remainder=False)
 
 for epoch in range(EPOCHS):
   batch_loop = tqdm(train_dataset)
@@ -341,7 +160,7 @@ for epoch in range(EPOCHS):
 
     batch_loop.set_postfix_str(f"GPT loss: {float(output.loss)}")
 
-    if batch_index % 50 == 0 and batch_index != 0:
+    if batch_index % 100 == 0 and batch_index != 0:
       generated_ballad = "\n------------------------------\n" + generate_sample(model, tokenizer) + "\n------------------------------\n"
       print(generated_ballad)
       with open("generated_ballads.txt", "a") as f:
