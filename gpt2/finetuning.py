@@ -59,6 +59,7 @@ train_quatrains = []
 train_prompts = []
 
 if exists(SAVED_CORRECTED_WORDS_PATH):
+    global CORRECTED_WORDS
     load_corrected_words(SAVED_CORRECTED_WORDS_PATH)
     print(f"Corrected word dictionary loaded. Length: {len(CORRECTED_WORDS)}")
         
