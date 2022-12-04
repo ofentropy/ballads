@@ -56,10 +56,9 @@ print("Preparing the prompts...")
 train_quatrains = []
 train_prompts = []
 
-print("Corrected words: ", CORRECTED_WORDS)
 if exists(SAVED_CORRECTED_WORDS_PATH):
     load_corrected_words(SAVED_CORRECTED_WORDS_PATH)
-    print("Corrected word dictionary loaded.")
+    print(f"Corrected word dictionary loaded. Length: {len(CORRECTED_WORDS)}")
         
 for ballad in tqdm(corpus_data):
     quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad, tokenizer, patterns=["AABB", "ABAB", "ABAC", "ABCB"])
