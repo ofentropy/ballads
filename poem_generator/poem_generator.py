@@ -133,7 +133,7 @@ def generate_poem_from_prompt(model, tokenizer, prompt):
   return generated_text.strip()
 
 
-===========================================================
+# ===========================================================
 
 
 #set of images
