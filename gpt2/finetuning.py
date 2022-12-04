@@ -17,6 +17,7 @@ import string
 import math
 import requests
 import json
+import pickle
 from os.path import exists
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
 from datasets import Dataset, load_dataset
@@ -39,6 +40,7 @@ BOS_TOKEN = "<|beginoftext|>"
 EOS_TOKEN = "<|endoftext|>"
 PAD_TOKEN = "<|pad|>"
 SAVED_CORRECTED_WORDS_PATH = "correted_words.json"
+SAVED_PROMPTS_PATH = "quatrain_prompts.json"
 
 tokenizer = GPT2Tokenizer.from_pretrained(
     "gpt2",
@@ -60,14 +62,22 @@ if exists(SAVED_CORRECTED_WORDS_PATH):
     load_corrected_words(SAVED_CORRECTED_WORDS_PATH)
     print(f"Corrected word dictionary loaded. Length: {len(CORRECTED_WORDS)}")
         
-for ballad in tqdm(corpus_data):
-    quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad, tokenizer, patterns=["AABB", "ABAB", "ABAC", "ABCB"])
-    train_quatrains.extend(quatrains)
-    train_prompts.extend(prompts)
+if exists(SAVED_PROMPTS_PATH):
+    with open(SAVED_PROMPTS_PATH, 'rb') as new_file:
+        train_prompts = pickle.load(new_file)
+else:    
+    for ballad in tqdm(corpus_data):
+        quatrains, prompts = make_quatrains_and_prompts_for_single_ballad(ballad, tokenizer, patterns=["AABB", "ABAB", "ABAC", "ABCB"])
+        train_quatrains.extend(quatrains)
+        train_prompts.extend(prompts)
     
 if not exists(SAVED_CORRECTED_WORDS_PATH):
     save_corrected_words(SAVED_CORRECTED_WORDS_PATH)
     print("Corrected word dictionary saved.")
+  
+if not exists(SAVED_PROMPTS_PATH):
+    with open(SAVED_PROMPTS_PATH, 'wb') as new_file:
+        pickle.dump(train_prompts, new_file)
 
 print(f"Prompts generated. Total number: {len(train_prompts)}")
 print(f"A few sample prompts:")
