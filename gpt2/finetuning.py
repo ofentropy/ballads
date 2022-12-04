@@ -114,7 +114,7 @@ lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     decay_rate=DECAY_RATE,
     staircase=True)
 
-model = TFBalladModel.from_pretrained(
+model = TFGPT2LMHeadModel.from_pretrained(
         MODEL_TYPE,
         use_cache=False,
         pad_token_id=tokenizer.pad_token_id,
