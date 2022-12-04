@@ -81,7 +81,6 @@ def do_they_rhyme(word1, word2):
     return True
   return word1 in rhymes(word2)
 
-
 def make_quatrains_for_single_ballad(ballad, pattern):
     """
     :param ballad: dict {"text": string}
@@ -142,7 +141,20 @@ def make_quatrains_for_single_ballad(ballad, pattern):
     return quatrains
 
 
-def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
+def get_last_words(quatrain, tokenizer):
+    last_words = []
+    for line in quatrain:
+        last_word = None
+        line = [tokenizer.decode(word_id).lower().strip() for word_id in tokenizer.encode(line)]
+        for word in line:
+            if re.match(r"[a-zA-Z]+", word):
+                last_word = word
+        if last_word is not None:
+            last_words.append(last_word)
+    return last_words
+
+
+def make_quatrains_and_prompts_for_single_ballad(ballad, tokenizer, patterns=["ABCB"]):
     """
     :param ballad: dict {"text": string}
     :param pattern: list of strings - must be subset of ["AABB", "ABAB", "ABAC", "ABCB"]
@@ -159,7 +171,8 @@ def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     temp_adjs, temp_objects, temp_scenes = choose_random_words(corrected_ballad)
     prompts = []
     for i in range(len(quatrains)):
-        prompt = generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes)
+        temp_rhymes = get_last_words(quatrains[i], tokenizer)
+        prompt = generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes, temp_rhymes)
         for line in quatrains[i]:
             prompt += line + "\n"
         prompts.append(prompt)
@@ -167,13 +180,15 @@ def make_quatrains_and_prompts_for_single_ballad(ballad, patterns=["ABCB"]):
     return quatrains, prompts
 
 
-def generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes):
+def generate_training_prompt_from_given(temp_adjs, temp_objects, temp_scenes, temp_rhymes):
     adjs = ["sentiments:"] + get_synonyms(temp_adjs, "ADJ")
     objects = ["objects:"] + get_synonyms(temp_objects, "NOUN")
     scenes = ["scenes:"] + get_synonyms(temp_scenes, "NOUN")
-
+    rhymes = ["rhymes:"] + temp_rhymes
+        
     prompt = ""
-    selections = [objects, scenes, adjs]
+    selections = [objects, scenes, adjs, rhymes]
+        
     for group in selections:
         for word in group:
             prompt += word + " "
