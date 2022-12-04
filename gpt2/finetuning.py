@@ -118,7 +118,7 @@ INITIAL_LEARNING_RATE = 0.0001
 DECAY_STEPS = 300
 DECAY_RATE = 0.7
 BATCH_SIZE = 16
-MODEL_TYPE = "gpt-medium"
+MODEL_TYPE = "gpt2-medium"
 
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE,
