@@ -301,7 +301,7 @@ def load_corrected_words(load_path):
     CORRECTED_WORDS = json.loads(f.read())
     f.close()
     print("CORRECTED_WORDS has been updated.")
-    return json.loads(f.read())
+    return True
         
 
 def save_corrected_words(save_path):
