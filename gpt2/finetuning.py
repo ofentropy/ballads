@@ -120,7 +120,7 @@ from transformers.modeling_tf_utils import input_processing, TFModelInputType, T
 from typing import Union
 
 EPOCHS = 100
-INITIAL_LEARNING_RATE = 2e-5
+INITIAL_LEARNING_RATE = 0.001
 DECAY_STEPS = 10000
 DECAY_RATE = 0.8
 BATCH_SIZE = 16
