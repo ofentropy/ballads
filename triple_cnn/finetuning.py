@@ -57,15 +57,14 @@ common_url_to_scenes = get_img_labels_from_csv("data/common_url_to_scenes.csv", 
 BATCH_SIZE = 1
 EPOCHS = 5
 
-objects_path = "objects_inceptionv3.h5"
-scenes_path = "scenes_inceptionv3.h5"
-sentiments_path = "sentiments_inceptionv3.h5"
+objects_path = "objects_precision_inceptionv3.h5"
+scenes_path = "scenes_precision_inceptionv3.h5"
+sentiments_path = "sentiments_precision_inceptionv3.h5"
 
 def load_model(model_path, num_labels, metrics):
     model = MultiLabelCNN(num_labels, metrics)
     model.load_weights(model_path)
     return model
-
 
 def finetune(model_path, metrics, url_to_labels, labels_lookup, url_file_lookup, num_labels):
     X, Y = load_images_and_get_ground_truths(url_to_labels, labels_lookup, url_file_lookup, num_labels)
