@@ -11,6 +11,7 @@ from keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tc_util.importutil import *
 from tc_processing import *
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 from balladsutil.split_dictionary import *
 import matplotlib.image
 # from sklearn.metrics import classification_report
@@ -68,12 +69,25 @@ def load_model(model_path, num_labels, metrics):
     model.load_weights(model_path)
     return model
 
+def train_test_split_dict(d, seed=0):
+    cutoff = int(0.9*len(d))
+    k = list(d.keys())
+    shuffled = shuffle(k, random_state = seed)
+    train_urls, test_urls = shuffled[:cutoff], shuffled[cutoff:]
+    train_utl = {}
+    test_utl = {}
+    for url in train_urls:
+        train_utl[url] = d[url]
+    for url in test_urls:
+        test_utl[url] = d[url]
+    return train_utl, test_utl
+
 def finetune(model_path, metrics, url_to_labels, labels_lookup, url_file_lookup, num_labels):
-    cutoff = int(0.9*len(url_to_labels))
-    train_utl, test_utl = split(url_to_labels, cutoff)
+    random_state = 0
+    train_utl, test_utl = train_test_split_dict(url_to_labels, random_state)
     X, Y = load_images_and_get_ground_truths(train_utl, labels_lookup, url_file_lookup, num_labels)
     X_test, Y_test = load_images_and_get_ground_truths(test_utl, labels_lookup, url_file_lookup, num_labels)
-    X_train, X_val, Y_train, Y_val = train_test_split(X,Y, test_size=1./9.)
+    X_train, X_val, Y_train, Y_val = train_test_split(X,Y, test_size=1./9., random_state=random_state)
     model = MultiLabelCNN(num_labels, metrics)
     model_checkpoint = ModelCheckpoint(model_path, monitor=metrics[0].name,verbose=1, save_best_only=True)
     model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
