@@ -88,6 +88,7 @@ for prompt in random.sample(train_prompts, k=3):
     print()
     
 print(f"Removing too long prompts...")
+train_prompts = train_prompts[:1000]
 train_prompts = [prompt for prompt in train_prompts if len(tokenizer.encode(prompt)) <= MAX_TOKENS - 2] # two spaces left for BOS and EOS
 print(f"There are {len(train_prompts)} prompts remaining.")
 
@@ -123,7 +124,7 @@ INITIAL_LEARNING_RATE = 0.0001
 DECAY_STEPS = 300
 DECAY_RATE = 0.7
 BATCH_SIZE = 16
-MODEL_TYPE = "gpt2-medium"
+MODEL_TYPE = "gpt2"
 
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE,
@@ -153,7 +154,6 @@ valid_id = set(random.choices(range(0, len(train_prompts)), k=int(len(train_prom
 train_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id not in valid_id]
 valid_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id in valid_id]
 
-train_prompts_temp = train_prompts_temp[:1000]
 random.shuffle(train_prompts_temp)
 random.shuffle(valid_prompts_temp)
 
