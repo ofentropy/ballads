@@ -69,9 +69,25 @@ def load_model(model_path, num_labels, metrics):
 
 def finetune(model_path, metrics, url_to_labels, labels_lookup, url_file_lookup, num_labels):
     X, Y = load_images_and_get_ground_truths(url_to_labels, labels_lookup, url_file_lookup, num_labels)
-    X_train, X_test, Y_train, Y_test = train_test_split(X,Y)
+    X_train, X_test_val, Y_train, Y_test_val = train_test_split(X,Y, test_size=0.20)
+    X_test, X_val, Y_test, Y_val = train_test_split(X_test_val, Y_test_val, test_size=0.50)
     model = MultiLabelCNN(num_labels, metrics)
     model_checkpoint = ModelCheckpoint(model_path, monitor=metrics[0].name,verbose=1, save_best_only=True)
     model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
-        validation_data=(X_test,Y_test), callbacks=[model_checkpoint])
-    return model
+        validation_data=(X_val,Y_val), callbacks=[model_checkpoint])
+    
+    return model, X_test, Y_test
+
+def test_model(model, X_test, Y_test):
+    results = model.evaluate(X_test, Y_test, batch_size=BATCH_SIZE)
+    print("test loss, test acc:", results)
+
+def save_test_urls(X_test, urls=None):
+    new_urls = X_test.keys()
+    if urls:
+        new_urls += urls
+        new_urls = [*set(new_urls)]
+    with open("test_urls.txt", "w") as f:
+        for url in new_urls:
+            print(url, file=f)
+    return new_urls
