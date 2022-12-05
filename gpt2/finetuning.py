@@ -153,10 +153,13 @@ valid_id = set(random.choices(range(0, len(train_prompts)), k=int(len(train_prom
 train_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id not in valid_id]
 valid_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id in valid_id]
 
+random.shuffle(train_prompts_temp)
+random.shuffle(valid_prompts_temp)
+
 train_prompts = tokenize(train_prompts_temp)
-print(f"Tokenized train prompts. Length: {len(train_prompts["input_ids"])}")
+#print(f"Tokenized train prompts. Length: {len(train_prompts["input_ids"])}")
 valid_prompts = tokenize(valid_prompts_temp)
-print(f"Tokenized validation prompts. Length: {len(valid_prompts["input_ids"])}")
+#print(f"Tokenized validation prompts. Length: {len(valid_prompts["input_ids"])}")
 
 output_types = {"input_ids": tf.int32, "attention_mask": tf.int32}
 
