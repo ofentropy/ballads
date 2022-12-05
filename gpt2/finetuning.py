@@ -88,7 +88,6 @@ for prompt in random.sample(train_prompts, k=3):
     print()
     
 print(f"Removing too long prompts...")
-train_prompts = train_prompts[:1000]
 train_prompts = [prompt for prompt in train_prompts if len(tokenizer.encode(prompt)) <= MAX_TOKENS - 2] # two spaces left for BOS and EOS
 print(f"There are {len(train_prompts)} prompts remaining.")
 
