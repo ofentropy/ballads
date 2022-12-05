@@ -109,7 +109,7 @@ def save_images(images):
         matplotlib.image.imsave(f'{name_prefix}{i}.jpg', images[i])
 
 def save_current_urls(urls, save_path):
-    with open("urls.txt", "w") as f:
+    with open(save_path, "w") as f:
         for url in urls.keys():
             print(url, file=f)
     return list(urls.keys())
