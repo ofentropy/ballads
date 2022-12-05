@@ -123,7 +123,7 @@ INITIAL_LEARNING_RATE = 0.0001
 DECAY_STEPS = 300
 DECAY_RATE = 0.7
 BATCH_SIZE = 16
-MODEL_TYPE = "gpt2"
+MODEL_TYPE = "gpt2-medium"
 
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE,
@@ -153,6 +153,7 @@ valid_id = set(random.choices(range(0, len(train_prompts)), k=int(len(train_prom
 train_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id not in valid_id]
 valid_prompts_temp = [prompt for id, prompt in enumerate(train_prompts) if id in valid_id]
 
+train_prompts_temp = train_prompts_temp[:1000]
 random.shuffle(train_prompts_temp)
 random.shuffle(valid_prompts_temp)
 
@@ -176,8 +177,13 @@ def valid_dataset_gen():
 train_dataset = tf.data.Dataset.from_generator(train_dataset_gen, output_types=output_types).batch(BATCH_SIZE, drop_remainder=False)
 valid_dataset = tf.data.Dataset.from_generator(valid_dataset_gen, output_types=output_types).batch(BATCH_SIZE, drop_remainder=False)
 
-len_td = len(train_prompts["input_ids"]) // BATCH_SIZE + len(train_prompts["input_ids"]) % BATCH_SIZE
-len_vd = len(valid_prompts["input_ids"]) // BATCH_SIZE + len(valid_prompts["input_ids"]) % BATCH_SIZE
+len_td = len(train_prompts["input_ids"]) // BATCH_SIZE
+if len(train_prompts["input_ids"]) % BATCH_SIZE != 0:
+    len_td += 1
+    
+len_vd = len(valid_prompts["input_ids"]) // BATCH_SIZE 
+if len(train_prompts["input_ids"]) % BATCH_SIZE != 0:
+    len_vd += 1
 
 train_dataset = train_dataset.apply(tf.data.experimental.assert_cardinality(len_td))
 valid_dataset = valid_dataset.apply(tf.data.experimental.assert_cardinality(len_vd))
