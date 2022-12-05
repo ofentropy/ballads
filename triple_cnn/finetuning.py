@@ -11,6 +11,7 @@ from keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tc_util.importutil import *
 from tc_processing import *
 from sklearn.model_selection import train_test_split
+import matplotlib.image
 # from sklearn.metrics import classification_report
 
 
@@ -67,26 +68,45 @@ def load_model(model_path, num_labels, metrics):
     return model
 
 def finetune(model_path, metrics, url_to_labels, labels_lookup, url_file_lookup, num_labels):
-    X, Y = load_images_and_get_ground_truths(url_to_labels, labels_lookup, url_file_lookup, num_labels)
-    X_train, X_test_val, Y_train, Y_test_val = train_test_split(X,Y, test_size=0.20)
-    X_test, X_val, Y_test, Y_val = train_test_split(X_test_val, Y_test_val, test_size=0.50)
+    train_utl, test_utl = url_to_labels[:int(0.9*len(url_to_labels))], url_to_labels[int(0.9*len(url_to_labels)):]
+    X, Y = load_images_and_get_ground_truths(train_utl, labels_lookup, url_file_lookup, num_labels)
+    X_test, Y_test = load_images_and_get_ground_truths(test_utl, labels_lookup, url_file_lookup, num_labels)
+    X_train, X_val, Y_train, Y_val = train_test_split(X,Y, test_size=1./9.)
     model = MultiLabelCNN(num_labels, metrics)
     model_checkpoint = ModelCheckpoint(model_path, monitor=metrics[0].name,verbose=1, save_best_only=True)
     model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS,
         validation_data=(X_val,Y_val), callbacks=[model_checkpoint])
     
-    return model, X_test, Y_test
+    return model, test_utl, X_test, Y_test
 
 def test_model(model, X_test, Y_test):
     results = model.evaluate(X_test, Y_test, batch_size=BATCH_SIZE)
-    print("test loss, test acc:", results)
+    print("test loss, test precision:", results)
 
-def save_test_urls(X_test, urls=None):
-    new_urls = X_test.keys()
-    if urls:
-        new_urls += urls
-        new_urls = [*set(new_urls)]
-    with open("test_urls.txt", "w") as f:
-        for url in new_urls:
+def store_all_test_images(objects, scenes, sentiments):
+    raw = np.concatenate((objects, scenes, sentiments))
+    return np.unique(raw)
+
+def save_images(images):
+    name_prefix = "test_"
+    for i in range(len(images)):
+        matplotlib.image.imsave(f'{name_prefix}{i}.jpg', images[i])
+
+def save_current_urls(urls, save_path):
+    with open("urls.txt", "w") as f:
+        for url in urls.keys():
             print(url, file=f)
-    return new_urls
+    return list(urls.keys())
+
+def save_all_urls(objects, scenes, sentiments):
+    obj_set = set(objects)
+    sce_set = set(scenes)
+    sen_set = set(sentiments)
+
+    intersection = obj_set.intersection(sce_set)
+    ret = list(intersection.intersection(sen_set))
+
+    with open("urls.txt", "w") as f:
+        for url in ret:
+            print(url, file=f)
+    return ret
