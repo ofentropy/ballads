@@ -28,12 +28,13 @@ warnings.filterwarnings("ignore")
 
 print(f"Tensorflow version: {tf.__version__}")
 print(f"Transformers version: {transformers.__version__}")
-print("Loading the dataset...")
-dataset_url = "https://github.com/mckurz/ballads/raw/main/ballads_data3.json"
-response = requests.get(dataset_url)
-corpus_data = json.loads(response.text)
+#print("Loading the dataset...")
+#dataset_url = "https://github.com/mckurz/ballads/raw/main/ballads_data3.json"
+#response = requests.get(dataset_url)
+#corpus_data = json.loads(response.text)
 #corpus_data = corpus_data[:50]
-print(f"Dataset loaded. There are {len(corpus_data)} ballads.") # should be 6597
+#print(f"Dataset loaded. There are {len(corpus_data)} ballads.") # should be 6597
+
 print("Loading the tokenizer...")
 MAX_TOKENS = 128
 BOS_TOKEN = "<|beginoftext|>"
@@ -105,7 +106,7 @@ def tokenize(prompts, tokenizer=tokenizer):
         truncation=True,
         pad_to_max_length=True,
     )
-    output["labels"] = output["input_ids"].copy()
+    #output["labels"] = output["input_ids"].copy()
 
     return output
 
