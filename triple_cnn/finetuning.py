@@ -11,6 +11,7 @@ from keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tc_util.importutil import *
 from tc_processing import *
 from sklearn.model_selection import train_test_split
+from balladsutil.split_dictionary import *
 import matplotlib.image
 # from sklearn.metrics import classification_report
 
@@ -68,7 +69,8 @@ def load_model(model_path, num_labels, metrics):
     return model
 
 def finetune(model_path, metrics, url_to_labels, labels_lookup, url_file_lookup, num_labels):
-    train_utl, test_utl = url_to_labels[:int(0.9*len(url_to_labels))], url_to_labels[int(0.9*len(url_to_labels)):]
+    cutoff = int(0.9*len(url_to_labels))
+    train_utl, test_utl = split(url_to_labels, cutoff)
     X, Y = load_images_and_get_ground_truths(train_utl, labels_lookup, url_file_lookup, num_labels)
     X_test, Y_test = load_images_and_get_ground_truths(test_utl, labels_lookup, url_file_lookup, num_labels)
     X_train, X_val, Y_train, Y_val = train_test_split(X,Y, test_size=1./9.)
