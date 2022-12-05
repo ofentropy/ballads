@@ -182,7 +182,7 @@ len_vd = len(valid_prompts["input_ids"]) // BATCH_SIZE + len(valid_prompts["inpu
 train_dataset = train_dataset.apply(tf.data.experimental.assert_cardinality(len_td))
 valid_dataset = valid_dataset.apply(tf.data.experimental.assert_cardinality(len_vd))
 
-def generate_sample(model, tokenizer, prompt="<|beginoftext|>objects: tree crown\nscenes: coronation palace\nsentiments: happiness glory\nrhymes: victory crown beer gown\nballad:\n"):
+def generate_sample(model, tokenizer, prompt="<|beginoftext|>objects: sword candle\nscenes: coronation palace\nsentiments: happiness glory\nrhymes: victory crown beer gown\nballad:\n"):
   input_ids = tokenizer.encode(prompt, return_tensors='tf')
   sample_output = model.generate(input_ids, do_sample=True, max_length=MAX_TOKENS, top_k=50, top_p=0.95, num_return_sequences=1, no_repeat_ngram_size=2)
   generated_text = tokenizer.decode(sample_output[0], skip_special_tokens=True)
@@ -208,7 +208,7 @@ for epoch in range(EPOCHS):
       print(generated_ballad)
       with open("generated_ballads.txt", "a") as f:
           f.write(generated_ballad)
-    if batch_index % 3000 == 0 and batch_index != 0:
+    if batch_index % 4000 == 0 and batch_index != 0:
       model.save_weights(f"checkpoints/gpt2-e{epoch}-b{batch_index}")
   print("Epoch finished. Validation...")
   val_batch_loop = tqdm(valid_dataset)
