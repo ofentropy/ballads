@@ -130,7 +130,7 @@ lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE,
     decay_steps=DECAY_STEPS,
     decay_rate=DECAY_RATE,
-    staircase=True)
+    staircase=False)
 
 model = TFGPT2LMHeadModel.from_pretrained(
         MODEL_TYPE,
