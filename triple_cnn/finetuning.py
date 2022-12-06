@@ -61,8 +61,8 @@ BATCH_SIZE = 1
 EPOCHS = 5
 
 objects_path = "objects_precision_inceptionv3.h5"
-scenes_path = "scenes_precision_inceptionv3.h5"
 sentiments_path = "sentiments_precision_inceptionv3.h5"
+scenes_path = "scenes_precision_inceptionv3.h5"
 
 def load_model(model_path, num_labels, metrics):
     model = MultiLabelCNN(num_labels, metrics)
@@ -99,6 +99,7 @@ def test_model(model, X_test, Y_test):
     results = model.evaluate(X_test, Y_test, batch_size=BATCH_SIZE)
     print("test loss, test precision:", results)
 
+#### utils ####
 def store_all_test_images(objects, scenes, sentiments):
     raw = np.concatenate((objects, scenes, sentiments))
     return np.unique(raw)
