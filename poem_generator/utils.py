@@ -219,5 +219,67 @@ def generate_poems(images, gpt2model, gpt2tokenizer, cnnmodel,save_path):
   print(json.dumps(json_format, sort_keys=True, indent=4), file=new_file)
   new_file.close()
 
-def word_by_word():
-  pass
+def generate_next_word(context, model, tokenizer, constraints, buffer=3):
+  """
+  buffer determines how many more tokens in addition to the context
+  the model should generate
+  """
+  input_ids = tokenizer.encode("<|beginoftext|>" + context, return_tensors='tf')
+  output = model.generate(input_ids, 
+                          do_sample=True, 
+                          max_length=len(input_ids[0]) + buffer, 
+                          top_k=50, 
+                          top_p=0.95, 
+                          num_return_sequences=1, 
+                          no_repeat_ngram_size=2,
+                          num_beams=5,
+                          constraints=constraints)
+  decoded = tokenizer.decode(output[0], skip_special_tokens=True)[len(context):]
+  decoded = decoded.lstrip()
+  next_word = decoded.split(" ")[0]
+  if "\n" in next_word:
+    next_word = next_word.split("\n")[0] + "\n"
+  return next_word
+
+def generate_poem_word_by_word(model, tokenizer, keywords, next_word_buffer, line_threshold=25):
+  """
+  line_threshold = max words per line before hardcoded line-break
+  """
+  initial_context, constraints, rhymes = generate_prompt_constraints_from_keywords(keywords)
+  initial_context = initial_context[len("<|beginoftext|>"):]
+  line_count = 0
+  curr_line = []
+  current_context = initial_context
+  ballad = ""
+  while line_count < 4:
+    next_word = generate_next_word(current_context, model, tokenizer, constraints, next_word_buffer)
+    current_context += " " + next_word
+    ballad += next_word + " "
+    curr_line.append(next_word)
+    if next_word in rhymes:
+      rhymes.remove(next_word)
+      constraints = [PhrasalConstraint(token_ids=tokenizer.encode(" ".join(rhymes)))]
+    if "\n" in next_word:
+      line_count += 1
+      curr_line = []
+    elif line_count <= 3 and len(curr_line) > line_threshold:
+      line_count += 1
+      curr_line = []
+      current_context += " \n"
+      ballad += "\n "
+    if line_count == 4:
+      break
+  return ballad, rhymes
+
+def generate_poems_word_by_word(images, gpt2model, gpt2tokenizer, cnnmodel, save_path, buffer=3):
+  if not os.path.exists(save_path.split("/")[0]):
+    os.makedirs(save_path.split("/")[0])
+  json_format = []
+  for id, image_url in enumerate(images):
+    keywords = cnnmodel.generate_labels(image_url, kind="url", n=3, top_k=10, verbose=True)
+    poem, rhymes = generate_poem_word_by_word(gpt2model, gpt2tokenizer, keywords, buffer, line_threshold=25)
+    json_format.append({"id": id, "url": image_url, "img_labels": keywords, "rhymes":rhymes, #img_labels is like "related" but this is a dictionary
+                    "poem": poem})
+  new_file = open(save_path, 'w')
+  print(json.dumps(json_format, sort_keys=True, indent=4), file=new_file)
+  new_file.close()
