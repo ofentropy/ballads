@@ -43,13 +43,18 @@ from utils import get_k_labels_from_text, generate_poems # maybe needs to be "fr
 objects_path = "/content/drive/MyDrive/CS230 Project/cnns/objects_precision_inceptionv3.h5"
 scenes_path = "/content/drive/MyDrive/CS230 Project/cnns/scenes_precision_inceptionv3.h5"
 sentiments_path = "/content/drive/MyDrive/CS230 Project/cnns/sentiments_precision_inceptionv3.h5"
-obj_model = load_model(objects_path, 550, metrics=[tf.keras.metrics.Precision(top_k = 550)])
-sce_model = load_model(scenes_path, 565, metrics=[tf.keras.metrics.Precision(top_k = 565)])
-sen_model = load_model(sentiments_path, 322, metrics=[tf.keras.metrics.Precision(top_k = 322)])
 
 common_object_labels = get_labels_from_text("/content/drive/MyDrive/CS230 Project/data/common_object_labels.txt")
 common_sentiment_labels = get_labels_from_text("/content/drive/MyDrive/CS230 Project/data/common_sentiment_labels.txt")
 common_scene_labels = get_labels_from_text("/content/drive/MyDrive/CS230 Project/data/common_scene_labels.txt")
+
+num_object_labels = len(common_object_labels)
+num_sentiment_labels = len(common_sentiment_labels)
+num_scene_labels = len(common_scene_labels)
+
+obj_model = load_model(objects_path, num_object_labels, metrics=[tf.keras.metrics.Precision(top_k = num_object_labels)])
+sce_model = load_model(scenes_path, num_sentiment_labels, metrics=[tf.keras.metrics.Precision(top_k = num_sentiment_labels)])
+sen_model = load_model(sentiments_path, num_scene_labels, metrics=[tf.keras.metrics.Precision(top_k = common_scene_labels)])
 
 objects_reverse_lookup, _ = create_labels_lookup(common_object_labels)
 sentiments_reverse_lookup, _ = create_labels_lookup(common_sentiment_labels)
