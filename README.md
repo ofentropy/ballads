@@ -1,6 +1,6 @@
 # CS230 Project
 
-# Requirements/Dependencies
+## Requirements/Dependencies
 - pronouncing
 - spacy
 - nltk
