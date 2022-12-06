@@ -228,7 +228,7 @@ for epoch in range(EPOCHS):
   print(f"Validation loss after epoch {epoch}: {valid_loss}")
   valid_loss_history.append(valid_loss)
   if valid_loss > min(valid_loss_history):
-    printf(f"Validation loss started rising! After this epoch: {valid_loss}, minimum so far: {min(valid_loss_history)}")
+    print(f"Validation loss started rising! After this epoch: {valid_loss}, minimum so far: {min(valid_loss_history)}.")
     patience -= 1
   else:
     patience = 2
