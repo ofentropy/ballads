@@ -10,7 +10,7 @@ import itertools
 from itertools import combinations
 import time
 import os
-
+from transformers import PhrasalConstraint
 
 
 d = cmudict.dict()
