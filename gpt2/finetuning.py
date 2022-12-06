@@ -36,7 +36,7 @@ print(f"Transformers version: {transformers.__version__}")
 #print(f"Dataset loaded. There are {len(corpus_data)} ballads.") # should be 6597
 
 print("Loading the tokenizer...")
-MAX_TOKENS = 128
+MAX_TOKENS = 90
 BOS_TOKEN = "<|beginoftext|>"
 EOS_TOKEN = "<|endoftext|>"
 PAD_TOKEN = "<|pad|>"
@@ -123,8 +123,8 @@ EPOCHS = 100
 INITIAL_LEARNING_RATE = 0.0001
 DECAY_STEPS = 10000
 DECAY_RATE = 0.8
-BATCH_SIZE = 16
-MODEL_TYPE = "gpt2"
+BATCH_SIZE = 12
+MODEL_TYPE = "gpt2-medium"
 
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE,
