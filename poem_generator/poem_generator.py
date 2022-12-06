@@ -118,6 +118,6 @@ img_samples.extend(unseen_samples)
 
 
 
-generate_poems(img_samples, model, triple_cnn, path)
+generate_poems(img_samples, model, tokenizer, triple_cnn, path)
 
 

@@ -12,7 +12,7 @@ import time
 import os
 from transformers import PhrasalConstraint
 
-
+MAX_TOKENS = 128
 d = cmudict.dict()
 pronouncing.init_cmu()
 
@@ -123,7 +123,7 @@ def choose_rhyme_words(chosen_labels):
   return chosen_rhymes
 
 
-def generate_prompt_constraints_from_keywords(keywords):
+def generate_prompt_constraints_from_keywords(keywords, tokenizer):
   #@param: keywords - dictionary of k keywords for "objects", "scenes", "sentiments" 
 
   prompt = "<|beginoftext|>"
@@ -180,7 +180,7 @@ def get_k_labels_from_text(k, seed, labels_path):
 
     return k_labels
 
-def generate_poem_from_image(image_url, gpt2model, cnnmodel):
+def generate_poem_from_image(image_url, gpt2model, gpt2tokenizer, cnnmodel):
   
   #pass through CNN1, CNN2, CNN3 for outputs
   labels = cnnmodel.generate_labels(image_url, kind="url", verbose=True)
@@ -191,20 +191,20 @@ def generate_poem_from_image(image_url, gpt2model, cnnmodel):
   #   img_to_related[id] = related
   
   #pass outputs into prompt generator
-  prompt, constraints, rhymes = generate_prompt_constraints_from_keywords(labels)
+  prompt, constraints, rhymes = generate_prompt_constraints_from_keywords(labels, gpt2tokenizer)
   # print(prompt)
 
   #pass prompt into generate_poem from prompt
-  poem = generate_poem_from_prompt(gpt2model, constraints, tokenizer, prompt)
+  poem = generate_poem_from_prompt(gpt2model, constraints, gpt2tokenizer, prompt)
   
   return poem, labels, rhymes
 
-def generate_poems(images, gpt2model, cnnmodel,save_path):
+def generate_poems(images, gpt2model, gpt2tokenizer, cnnmodel,save_path):
   if not os.path.exists(save_path.split("/")[0]):
     os.makedirs(save_path.split("/")[0])
   json_format = []
   for id, image_url in enumerate(images):
-    poem, img_labels,rhymes = generate_poem_from_image(image_url, gpt2model, cnnmodel)
+    poem, img_labels,rhymes = generate_poem_from_image(image_url, gpt2model, gpt2tokenizer, cnnmodel)
     print("labels: \n", img_labels)
     print("poem: \n", poem)
     url = image_url
@@ -218,3 +218,6 @@ def generate_poems(images, gpt2model, cnnmodel,save_path):
   new_file = open(save_path, 'w')
   print(json.dumps(json_format, sort_keys=True, indent=4), file=new_file)
   new_file.close()
+
+def word_by_word():
+  pass
