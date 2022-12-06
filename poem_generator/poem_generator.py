@@ -33,6 +33,12 @@ from transformers import (TFGPT2LMHeadModel,
                           PhrasalConstraint)
 import tensorflow as tf
 
+from triple_cnn.finetuning import load_model
+from triple_cnn.tc_util.importutil import get_labels_from_text
+from triple_cnn.tc_processing import create_labels_lookup
+from triple_cnn.generator import TripleCNN
+from utils import get_k_labels_from_text, generate_poems # maybe needs to be "from utils import *"
+
 # LOAD THE CNNS
 objects_path = "/content/drive/MyDrive/CS230 Project/cnns/objects_precision_inceptionv3.h5"
 scenes_path = "/content/drive/MyDrive/CS230 Project/cnns/scenes_precision_inceptionv3.h5"
