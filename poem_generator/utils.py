@@ -163,3 +163,57 @@ def generate_poem_from_prompt(model, constraints, tokenizer, prompt):
   generated_text = tokenizer.decode(sample_output[0], skip_special_tokens=True)
   generated_text = generated_text.split("ballad:\n")[1]
   return generated_text.strip()
+
+
+import json
+from tqdm.notebook import tqdm
+import random
+
+
+def get_k_labels_from_text(k, seed, labels_path):
+    with open(labels_path, 'r') as f:
+        data = f.read()
+        labels = data.split("\n")
+        random.seed(seed)
+        k_labels = random.sample(labels, k)
+
+    return k_labels
+
+def generate_poem_from_image(image_url, gpt2model, cnnmodel):
+  
+  #pass through CNN1, CNN2, CNN3 for outputs
+  labels = cnnmodel.generate_labels(image_url, kind="url", verbose=True)
+  # img_to_related = {}
+  # for id, kw in img_to_keywords.items():
+  #   related_raw = get_n_related_terms_raw_from_word(kw[0], n_terms, min_weight)
+  #   related = convert_related_raw_to_words(related_raw)
+  #   img_to_related[id] = related
+  
+  #pass outputs into prompt generator
+  prompt, constraints, rhymes = generate_prompt_constraints_from_keywords(labels)
+  # print(prompt)
+
+  #pass prompt into generate_poem from prompt
+  poem = generate_poem_from_prompt(gpt2model, constraints, tokenizer, prompt)
+  
+  return poem, labels, rhymes
+
+def generate_poems(images, gpt2model, cnnmodel,save_path):
+  if not os.path.exists(save_path.split("/")[0]):
+    os.makedirs(save_path.split("/")[0])
+  json_format = []
+  for id, image_url in enumerate(images):
+    poem, img_labels,rhymes = generate_poem_from_image(image_url, gpt2model, cnnmodel)
+    print("labels: \n", img_labels)
+    print("poem: \n", poem)
+    url = image_url
+    # related_words = img_to_related.get(id)
+    # kw = img_labels
+    json_format.append({"id": id, "url": url, "img_labels": img_labels, "rhymes":rhymes, #img_labels is like "related" but this is a dictionary
+                    "poem": poem})
+    # json_format.append({"id": id, "url": url, "keyword": kw[0], 
+    #                "related": related_words, "poem": poem})
+    
+  new_file = open(save_path, 'w')
+  print(json.dumps(json_format, sort_keys=True, indent=4), file=new_file)
+  new_file.close()
