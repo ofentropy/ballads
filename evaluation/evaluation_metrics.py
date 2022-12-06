@@ -5,7 +5,6 @@ import re
 import itertools
 import pronouncing
 import nltk
-# nltk.download()
 from nltk.corpus import cmudict
 import pronouncing
 
