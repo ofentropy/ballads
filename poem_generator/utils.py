@@ -11,6 +11,9 @@ from itertools import combinations
 import time
 import os
 from transformers import PhrasalConstraint
+import json
+from tqdm.notebook import tqdm
+import random
 
 MAX_TOKENS = 128
 d = cmudict.dict()
@@ -27,10 +30,7 @@ def get_syllables(word):
 def get_synonyms(words):
     """
     :param words: list of str
-    :param pos: str that indicates part of speech, "NOUN" or "ADJ"
     """
-
-    # assert pos in ["ADJ", "NOUN"]
 
     synonym_words = []
     if words is None:
@@ -92,7 +92,6 @@ def do_they_rhyme(word1, word2):
 
 
 def generate_rhymes(keywords):
-  # rhymes=[]
   rhymes = {}
 
   #extract keywords
@@ -106,7 +105,6 @@ def generate_rhymes(keywords):
   #get rhymes to the synonyms and keywords
   for group in words:
     for word in group:
-      # rhymes.append(get_rhymes(word))
       rhyming_words = get_rhymes(word)
       if len(rhyming_words) > 0:
         rhymes[word] = get_rhymes(word)
@@ -166,11 +164,6 @@ def generate_poem_from_prompt(model, constraints, tokenizer, prompt):
   return generated_text.strip()
 
 
-import json
-from tqdm.notebook import tqdm
-import random
-
-
 def get_k_labels_from_text(k, seed, labels_path):
     with open(labels_path, 'r') as f:
         data = f.read()
@@ -181,18 +174,11 @@ def get_k_labels_from_text(k, seed, labels_path):
     return k_labels
 
 def generate_poem_from_image(image_url, gpt2model, gpt2tokenizer, cnnmodel):
-  
-  #pass through CNN1, CNN2, CNN3 for outputs
   labels = cnnmodel.generate_labels(image_url, kind="url", verbose=True)
-  # img_to_related = {}
-  # for id, kw in img_to_keywords.items():
-  #   related_raw = get_n_related_terms_raw_from_word(kw[0], n_terms, min_weight)
-  #   related = convert_related_raw_to_words(related_raw)
-  #   img_to_related[id] = related
   
   #pass outputs into prompt generator
   prompt, constraints, rhymes = generate_prompt_constraints_from_keywords(labels, gpt2tokenizer)
-  # print(prompt)
+  
 
   #pass prompt into generate_poem from prompt
   poem = generate_poem_from_prompt(gpt2model, constraints, gpt2tokenizer, prompt)
@@ -208,12 +194,8 @@ def generate_poems(images, gpt2model, gpt2tokenizer, cnnmodel,save_path):
     print("labels: \n", img_labels)
     print("poem: \n", poem)
     url = image_url
-    # related_words = img_to_related.get(id)
-    # kw = img_labels
     json_format.append({"id": id, "url": url, "img_labels": img_labels, "rhymes":rhymes, #img_labels is like "related" but this is a dictionary
                     "poem": poem})
-    # json_format.append({"id": id, "url": url, "keyword": kw[0], 
-    #                "related": related_words, "poem": poem})
     
   new_file = open(save_path, 'w')
   print(json.dumps(json_format, sort_keys=True, indent=4), file=new_file)
