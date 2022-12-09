@@ -152,7 +152,10 @@ def eval_follows_rhyme_scheme(ballads):
   #percentage of ballads that follow the right rhyme scheme
   successes1 = 0
   successes2 = 0
+  successes3 = 0
+  successes4 = 0
   successes = 0
+
   n = len(ballads.keys())
   for id in ballads.keys():
     ballad = ballads[id]
@@ -165,13 +168,22 @@ def eval_follows_rhyme_scheme(ballads):
         last_words.append("")
     if (do_they_rhyme(last_words[0], last_words[2]) and do_they_rhyme(last_words[1], last_words[3])):
       successes1 += 1
-    if (do_they_rhyme(last_words[1], last_words[3])):
+    if (do_they_rhyme(last_words[0], last_words[2]) and do_they_rhyme(last_words[1], last_words[3])): #ABAB
+      successes1 += 1
+    if (do_they_rhyme(last_words[1], last_words[3]) and not do_they_rhyme(last_words[0], last_words[2])): #ABCB 
       successes2 += 1
-    if (do_they_rhyme(last_words[0], last_words[2])):
+    if (do_they_rhyme(last_words[0], last_words[2]) and not do_they_rhyme(last_words[1], last_words[3])):#ABAC 
+      successes3 += 1
+    if (do_they_rhyme(last_words[0], last_words[1]) and do_they_rhyme(last_words[2], last_words[3])):#AABB
+      successes4 += 1
+    if (do_they_rhyme(last_words[0], last_words[1]) or 
+        do_they_rhyme(last_words[0], last_words[2]) or 
+        do_they_rhyme(last_words[0], last_words[3]) or 
+        do_they_rhyme(last_words[1], last_words[2]) or
+        do_they_rhyme(last_words[1], last_words[3]) or 
+        do_they_rhyme(last_words[2], last_words[3])): 
       successes += 1
-    if (do_they_rhyme(last_words[1], last_words[3])):
-      successes += 1
-  return (successes1/n, successes2/n, successes/n)
+  return (successes1/n, successes2/n, successes3/n, successes4/n, successes/n)
 
 ##################################################################
 #ConceptNet Score
