@@ -104,14 +104,6 @@ def create_ground_truth_vector(labels, lookup, class_num):
     return ground_truth
 
 
-"""def get_class_weights(ground_truth):
-    # source: https://stackoverflow.com/a/48700950
-    number_dim = ground_truth.shape[1]
-    weights = np.empty([number_dim, 2])
-    for i in range(number_dim):
-        weights[i] = compute_class_weight('balanced', [0.,1.], ground_truth[:, i])
-    return weights"""
-    
 def decode_predictions(predictions, reverse_lookup, k=10):
     """
     """
