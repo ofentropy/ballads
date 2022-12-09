@@ -33,18 +33,13 @@ def get_syllables(word):
   word = word.lower()
   entries = d.get(word)
   if not entries:
-    # entries = [phoney.predict(word).split(" ")]
     return [[]]
-    # entries = [phoney.predict(word).split(" ")]
   return entries
 
 
 def get_syllable_count(word):
   lowercase = word.lower()
-  # print(lowercase)
-  if lowercase not in d:
-    # entries = [phoney.predict(word).split(" ")]
-    # print(lowercase)
+  if lowercase not in d:  
     return -1 
   else:
      return max([len([y for y in x if y[-1].isdigit()]) for x in d[lowercase]])
@@ -70,7 +65,6 @@ def eval_syllables(ballad, exact=True):
 
 def eval_syllables_across_ballads(ballads, exact=True):
   n = len(ballads.keys())
-  print(n)
   average_syllable_score = 0
   for id in ballads.keys():
     ballad = ballads[id]
