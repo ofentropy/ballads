@@ -1,4 +1,4 @@
-from evaluation_metrics import *
+from evaluation_metrics_baseline import *
 
 ballads, related_words = json_parser("https://raw.githubusercontent.com/nmailan/cs230ballad/main/generated_ballads.json")
 ballads_aws, related_words_aws = json_parser("https://raw.githubusercontent.com/ofentropy/balladsfiles/main/generated_ballads.json")
