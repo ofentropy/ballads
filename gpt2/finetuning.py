@@ -22,27 +22,34 @@ from os.path import exists
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
 from datasets import Dataset, load_dataset
 from tqdm import tqdm
+from dataclasses import dataclass
+from typing import List, Optional, Tuple
+import tensorflow as tf
+from transformers import TFGPT2PreTrainedModel, TFGPT2MainLayer, BatchEncoding
+from transformers.modeling_tf_outputs import TFCausalLMOutputWithCrossAttentions
+from transformers.modeling_tf_utils import input_processing, TFModelInputType, TFCausalLanguageModelingLoss
+from typing import Union
 
 np.set_printoptions(suppress=True)
 warnings.filterwarnings("ignore")
 
 print(f"Tensorflow version: {tf.__version__}")
 print(f"Transformers version: {transformers.__version__}")
-#print("Loading the dataset...")
-#dataset_url = "https://github.com/mckurz/ballads/raw/main/ballads_data3.json"
-#response = requests.get(dataset_url)
-#corpus_data = json.loads(response.text)
-#corpus_data = corpus_data[:50]
-#print(f"Dataset loaded. There are {len(corpus_data)} ballads.") # should be 6597
 
-print("Loading the tokenizer...")
 MAX_TOKENS = 90
 BOS_TOKEN = "<|beginoftext|>"
 EOS_TOKEN = "<|endoftext|>"
 PAD_TOKEN = "<|pad|>"
 SAVED_CORRECTED_WORDS_PATH = "correted_words.json"
 SAVED_PROMPTS_PATH = "quatrain_prompts.json"
+EPOCHS = 100
+INITIAL_LEARNING_RATE = 0.0001
+DECAY_STEPS = 10000
+DECAY_RATE = 0.8
+BATCH_SIZE = 12
+MODEL_TYPE = "gpt2-medium"
 
+print("Loading the tokenizer...")
 tokenizer = GPT2Tokenizer.from_pretrained(
     "gpt2",
     bos_token=BOS_TOKEN,
@@ -109,22 +116,6 @@ def tokenize(prompts, tokenizer=tokenizer):
     #output["labels"] = output["input_ids"].copy()
 
     return output
-
-from dataclasses import dataclass
-from typing import List, Optional, Tuple
-
-import tensorflow as tf
-from transformers import TFGPT2PreTrainedModel, TFGPT2MainLayer, BatchEncoding
-from transformers.modeling_tf_outputs import TFCausalLMOutputWithCrossAttentions
-from transformers.modeling_tf_utils import input_processing, TFModelInputType, TFCausalLanguageModelingLoss
-from typing import Union
-
-EPOCHS = 100
-INITIAL_LEARNING_RATE = 0.0001
-DECAY_STEPS = 10000
-DECAY_RATE = 0.8
-BATCH_SIZE = 12
-MODEL_TYPE = "gpt2-medium"
 
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE,
